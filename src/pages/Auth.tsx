@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,8 @@ export default function Auth() {
   });
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const { toast } = useToast();
   const { login } = useUserStore();
 
@@ -44,7 +46,7 @@ export default function Auth() {
         if (response.success) {
           login(response.data.user, response.data.token);
           toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
-          navigate('/');
+          navigate(redirectTo);
         } else {
           toast({ title: 'Error', description: response.error || 'Login failed', variant: 'destructive' });
         }
@@ -59,7 +61,7 @@ export default function Auth() {
         if (response.success) {
           login(response.data.user, response.data.token);
           toast({ title: 'Welcome!', description: 'Your account has been created successfully.' });
-          navigate('/');
+          navigate(redirectTo);
         } else {
           toast({ title: 'Error', description: response.error || 'Registration failed', variant: 'destructive' });
         }
@@ -79,8 +81,9 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = () => {
-    // Redirect to backend Google OAuth endpoint
-    window.location.href = 'https://backend.jaswantsoni.com/api/auth/google';
+    // Redirect to backend Google OAuth endpoint with redirect param
+    const redirectParam = encodeURIComponent(redirectTo);
+    window.location.href = `https://backend.jaswantsoni.com/api/auth/google?redirect=${redirectParam}`;
   };
 
   return (
