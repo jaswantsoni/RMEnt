@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Truck, Shield, Check } from 'lucide-react';
@@ -65,10 +65,26 @@ export default function Checkout() {
     }
   };
 
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please login to proceed with checkout.',
+      });
+      navigate('/auth?redirect=/checkout');
+    }
+  }, [isAuthenticated, navigate, toast]);
+
   const subtotal = cart?.subtotal || 0;
   const shipping = subtotal > 5000 ? 0 : 499;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + shipping + tax;
+
+  // Don't render checkout if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   if (!cart || cart.items.length === 0) {
     return (

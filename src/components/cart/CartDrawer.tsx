@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Trash2, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '@/store/cartStore';
+import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 export function CartDrawer() {
   const { cart, isOpen, closeCart, updateItemQuantity, removeItem } = useCartStore();
+  const { isAuthenticated } = useUserStore();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -178,9 +180,18 @@ export function CartDrawer() {
                       Add {formatPrice(5000 - cart.subtotal)} more for free shipping
                     </p>
                   )}
-                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg" onClick={closeCart} asChild>
-                    <Link to="/checkout">Proceed to Checkout</Link>
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg" onClick={closeCart} asChild>
+                      <Link to="/checkout">Proceed to Checkout</Link>
+                    </Button>
+                  ) : (
+                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg" onClick={closeCart} asChild>
+                      <Link to="/auth?redirect=/checkout" className="flex items-center gap-2">
+                        <LogIn className="h-4 w-4" />
+                        Login to Checkout
+                      </Link>
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     className="w-full"
