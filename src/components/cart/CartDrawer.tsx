@@ -178,16 +178,15 @@ export function CartDrawer() {
                       Add {formatPrice(5000 - cart.subtotal)} more for free shipping
                     </p>
                   )}
-                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg">
-                    Proceed to Checkout
+                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg" onClick={closeCart} asChild>
+                    <Link to="/checkout">Proceed to Checkout</Link>
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
                     onClick={closeCart}
-                    asChild
                   >
-                    <Link to="/cart">View Cart</Link>
+                    Continue Shopping
                   </Button>
                 </div>
               </>
