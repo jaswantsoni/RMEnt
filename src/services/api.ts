@@ -95,6 +95,20 @@ class ApiService {
     return this.request<ApiResponse<User>>('/auth/me');
   }
 
+  // Google OAuth - returns the URL to redirect to
+  getGoogleAuthUrl(): string {
+    return `${API_BASE_URL}/auth/google`;
+  }
+
+  // Handle Google OAuth callback
+  async handleGoogleCallback(code: string): Promise<ApiResponse<AuthResponse>> {
+    const response = await this.request<ApiResponse<AuthResponse>>(`/auth/google/callback?code=${code}`);
+    if (response.success && response.data.token) {
+      this.setToken(response.data.token);
+    }
+    return response;
+  }
+
   // Product endpoints
   async getProducts(
     filters?: ProductFilters,

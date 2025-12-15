@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Search, ShoppingBag, User, Heart } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
+import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +22,10 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { cart, openCart } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
+  const { isAuthenticated, user } = useUserStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,14 +79,40 @@ export function Header() {
 
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-primary">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-foreground/70 hover:text-primary"
+                onClick={() => navigate('/search')}
+              >
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-primary hidden sm:flex">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative text-foreground/70 hover:text-primary hidden sm:flex"
+                onClick={() => navigate('/wishlist')}
+              >
                 <Heart className="h-5 w-5" />
+                {wishlistItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium rounded-full">
+                    {wishlistItems.length}
+                  </span>
+                )}
               </Button>
-              <Button variant="ghost" size="icon" className="text-foreground/70 hover:text-primary hidden sm:flex">
-                <User className="h-5 w-5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-foreground/70 hover:text-primary hidden sm:flex"
+                onClick={() => navigate(isAuthenticated ? '/account' : '/auth')}
+              >
+                {isAuthenticated ? (
+                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
+                    {user?.firstName?.[0]}
+                  </div>
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
               </Button>
               <Button
                 variant="ghost"
@@ -155,13 +186,27 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="p-6 border-t border-border space-y-3">
-                  <Button variant="outline" className="w-full justify-start gap-3">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate(isAuthenticated ? '/account' : '/auth');
+                    }}
+                  >
                     <User className="h-5 w-5" />
-                    Account
+                    {isAuthenticated ? 'My Account' : 'Sign In'}
                   </Button>
-                  <Button variant="outline" className="w-full justify-start gap-3">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/wishlist');
+                    }}
+                  >
                     <Heart className="h-5 w-5" />
-                    Wishlist
+                    Wishlist ({wishlistItems.length})
                   </Button>
                 </div>
               </div>

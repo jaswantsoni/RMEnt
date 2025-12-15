@@ -3,6 +3,7 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Product } from '@/types/api';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +14,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addItem } = useCartStore();
+  const { toggleItem, isInWishlist } = useWishlistStore();
+  const inWishlist = isInWishlist(product.id);
 
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
@@ -74,9 +77,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <Button
               variant="secondary"
               size="icon"
-              className="h-10 w-10 bg-background/90 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground"
+              onClick={(e) => { e.preventDefault(); toggleItem(product); }}
+              className={cn("h-10 w-10 backdrop-blur-sm", inWishlist ? "bg-primary text-primary-foreground" : "bg-background/90 hover:bg-primary hover:text-primary-foreground")}
             >
-              <Heart className="h-4 w-4" />
+              <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} />
             </Button>
           </div>
 
