@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Minus, Plus, Heart, Share2, Truck, Shield, RefreshCw, Star, ChevronRight } from 'lucide-react';
@@ -109,6 +109,19 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState(mockProduct.variants[0]);
   const [quantity, setQuantity] = useState(1);
+  
+  // Zoom state
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const mainImageRef = useRef<HTMLDivElement>(null);
+
+  const handleImageMouseMove = (e: React.MouseEvent) => {
+    if (!mainImageRef.current) return;
+    const rect = mainImageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPosition({ x, y });
+  };
 
   // In real app, fetch product by slug
   const product = mockProduct;
@@ -157,11 +170,21 @@ export default function ProductDetail() {
               transition={{ duration: 0.6 }}
               className="space-y-4"
             >
-              <div className="aspect-square overflow-hidden rounded-sm bg-card">
+              <div 
+                ref={mainImageRef}
+                className="aspect-square overflow-hidden rounded-sm bg-card cursor-zoom-in"
+                onMouseMove={handleImageMouseMove}
+                onMouseEnter={() => setIsZooming(true)}
+                onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
+              >
                 <img
                   src={product.images[selectedImage]?.url}
                   alt={product.images[selectedImage]?.alt}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 ease-out"
+                  style={{
+                    transform: isZooming ? 'scale(2)' : 'scale(1)',
+                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                  }}
                 />
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2">
