@@ -1,3 +1,4 @@
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -16,6 +17,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addItem } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
+  
+  // Zoom state
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPosition({ x, y });
+  };
 
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
@@ -38,20 +52,25 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       className="group"
     >
       <div className="relative bg-card rounded-sm overflow-hidden luxury-border hover-lift">
-        {/* Image Container */}
-        <Link to={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden">
-          <img
-            src={product.images[0]?.url || '/placeholder.svg'}
-            alt={product.images[0]?.alt || product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-          {product.images[1] && (
+        {/* Image Container with Zoom */}
+        <Link 
+          to={`/product/${product.slug}`} 
+          className="block relative aspect-square overflow-hidden"
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setIsZooming(true)}
+          onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
+        >
+          <div ref={imageRef} className="w-full h-full">
             <img
-              src={product.images[1].url}
-              alt={product.images[1].alt || product.name}
-              className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+              src={product.images[0]?.url || '/placeholder.svg'}
+              alt={product.images[0]?.alt || product.name}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out"
+              style={{
+                transform: isZooming ? 'scale(1.5)' : 'scale(1)',
+                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+              }}
             />
-          )}
+          </div>
           
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -85,10 +104,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
 
           {/* Add to Cart Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-10">
             <Button
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 addItem(product);
               }}
               disabled={!product.inStock}
