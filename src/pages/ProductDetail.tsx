@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useProductStore } from '@/store/productStore';
 import { motion } from 'framer-motion';
 import { Minus, Plus, Heart, Share2, Truck, Shield, RefreshCw, Star, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
@@ -106,12 +107,19 @@ const relatedProducts: Product[] = [
 export default function ProductDetail() {
   const { slug } = useParams();
   const { addItem } = useCartStore();
+  const { getProductBySlug } = useProductStore();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState(mockProduct.variants[0]);
+  const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
 
-  // In real app, fetch product by slug
-  const product = mockProduct;
+  // Get product from store or fallback to mock
+  const product = getProductBySlug(slug || '') || mockProduct;
+  
+  useEffect(() => {
+    if (product.variants.length > 0) {
+      setSelectedVariant(product.variants[0]);
+    }
+  }, [product]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {

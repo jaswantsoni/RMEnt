@@ -89,6 +89,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <Button
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 addItem(product);
               }}
               disabled={!product.inStock}
