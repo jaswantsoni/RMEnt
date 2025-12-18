@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, ShoppingBag, User, Heart } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, User, Heart, Settings } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUserStore } from '@/store/userStore';
@@ -208,6 +208,19 @@ export function Header() {
                     <Heart className="h-5 w-5" />
                     Wishlist ({wishlistItems.length})
                   </Button>
+                  {isAuthenticated && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start gap-3"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        navigate('/admin');
+                      }}
+                    >
+                      <Settings className="h-5 w-5" />
+                      Admin Panel
+                    </Button>
+                  )}
                 </div>
               </div>
             </motion.div>
