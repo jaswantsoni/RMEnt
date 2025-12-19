@@ -24,161 +24,24 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import type { Product, Category } from '@/types/api';
-
-// Mock data
-const allProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Aurora Crystal Chandelier',
-    slug: 'aurora-crystal-chandelier',
-    description: 'Elegant crystal chandelier with modern design',
-    shortDescription: 'Modern crystal chandelier',
-    price: 45999,
-    compareAtPrice: 59999,
-    currency: 'INR',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?w=800', alt: 'Crystal Chandelier', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['luxury', 'crystal'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 15,
-    rating: 4.8,
-    reviewCount: 124,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '2',
-    name: 'Noir Industrial Pendant',
-    slug: 'noir-industrial-pendant',
-    description: 'Industrial style pendant light',
-    shortDescription: 'Industrial pendant',
-    price: 12999,
-    currency: 'INR',
-    images: [{ id: '2', url: 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=800', alt: 'Pendant Light', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['industrial'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 32,
-    rating: 4.6,
-    reviewCount: 89,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '3',
-    name: 'Royal Gold Ceiling Fan',
-    slug: 'royal-gold-ceiling-fan',
-    description: 'Premium ceiling fan with gold accents',
-    shortDescription: 'Gold accent ceiling fan',
-    price: 28999,
-    compareAtPrice: 34999,
-    currency: 'INR',
-    images: [{ id: '3', url: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800', alt: 'Ceiling Fan', position: 0 }],
-    category: { id: '2', name: 'Ceiling Fans', slug: 'ceiling-fans', description: '', image: '', productCount: 0 },
-    categoryId: '2',
-    variants: [],
-    tags: ['premium'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 8,
-    rating: 4.9,
-    reviewCount: 67,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '4',
-    name: 'Cascade Waterfall Faucet',
-    slug: 'cascade-waterfall-faucet',
-    description: 'Modern waterfall bathroom faucet',
-    shortDescription: 'Waterfall faucet',
-    price: 8499,
-    currency: 'INR',
-    images: [{ id: '4', url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800', alt: 'Faucet', position: 0 }],
-    category: { id: '3', name: 'Bath Fittings', slug: 'bath-fittings', description: '', image: '', productCount: 0 },
-    categoryId: '3',
-    variants: [],
-    tags: ['modern'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 45,
-    rating: 4.5,
-    reviewCount: 156,
-    featured: false,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '5',
-    name: 'Eclipse Wall Sconce',
-    slug: 'eclipse-wall-sconce',
-    description: 'Minimalist wall sconce',
-    shortDescription: 'Minimalist sconce',
-    price: 6999,
-    currency: 'INR',
-    images: [{ id: '5', url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800', alt: 'Wall Sconce', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['minimalist'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 25,
-    rating: 4.7,
-    reviewCount: 45,
-    featured: false,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '6',
-    name: 'Serene Rain Shower',
-    slug: 'serene-rain-shower',
-    description: 'Luxury rain shower head',
-    shortDescription: 'Rain shower',
-    price: 15999,
-    compareAtPrice: 19999,
-    currency: 'INR',
-    images: [{ id: '6', url: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800', alt: 'Rain Shower', position: 0 }],
-    category: { id: '3', name: 'Bath Fittings', slug: 'bath-fittings', description: '', image: '', productCount: 0 },
-    categoryId: '3',
-    variants: [],
-    tags: ['luxury'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 12,
-    rating: 4.9,
-    reviewCount: 78,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-];
+import { useProductStore } from '@/store/productStore';
 
 const categories: Category[] = [
-  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800', productCount: 0 },
-  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800', productCount: 0 },
-  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800', productCount: 0 },
-  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort & style', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', productCount: 0 },
-  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800', productCount: 0 },
-  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800', productCount: 0 },
-  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: 'https://images.unsplash.com/photo-1600166898405-da9535204843?w=800', productCount: 0 },
-  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800', productCount: 0 },
+  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
+  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
+  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: '', productCount: 0 },
+  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort & style', image: '', productCount: 0 },
+  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
+  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
+  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
+  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
 ];
 
 export default function Collections() {
   const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>(allProducts);
+  const { products: storeProducts } = useProductStore();
+  const [products, setProducts] = useState<Product[]>([]);
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortBy, setSortBy] = useState('newest');
@@ -186,7 +49,7 @@ export default function Collections() {
   const currentCategory = categories.find((c) => c.slug === category);
 
   useEffect(() => {
-    let filtered = [...allProducts];
+    let filtered = [...storeProducts];
 
     if (category) {
       filtered = filtered.filter((p) => p.category?.slug === category);
@@ -211,7 +74,7 @@ export default function Collections() {
     }
 
     setProducts(filtered);
-  }, [category, priceRange, sortBy]);
+  }, [category, priceRange, sortBy, storeProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {

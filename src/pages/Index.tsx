@@ -14,164 +14,16 @@ import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
 
 // Products will be loaded from Google Drive
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Aurora Crystal Chandelier',
-    slug: 'aurora-crystal-chandelier',
-    description: 'Elegant crystal chandelier with modern design',
-    shortDescription: 'Modern crystal chandelier',
-    price: 45999,
-    compareAtPrice: 59999,
-    currency: 'INR',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?w=800', alt: 'Crystal Chandelier', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['luxury', 'crystal'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 15,
-    rating: 4.8,
-    reviewCount: 124,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '2',
-    name: 'Noir Industrial Pendant',
-    slug: 'noir-industrial-pendant',
-    description: 'Industrial style pendant light',
-    shortDescription: 'Industrial pendant',
-    price: 12999,
-    currency: 'INR',
-    images: [{ id: '2', url: 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=800', alt: 'Pendant Light', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['industrial'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 32,
-    rating: 4.6,
-    reviewCount: 89,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '3',
-    name: 'Royal Gold Ceiling Fan',
-    slug: 'royal-gold-ceiling-fan',
-    description: 'Premium ceiling fan with gold accents',
-    shortDescription: 'Gold accent ceiling fan',
-    price: 28999,
-    compareAtPrice: 34999,
-    currency: 'INR',
-    images: [{ id: '3', url: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800', alt: 'Ceiling Fan', position: 0 }],
-    category: { id: '2', name: 'Ceiling Fans', slug: 'ceiling-fans', description: '', image: '', productCount: 0 },
-    categoryId: '2',
-    variants: [],
-    tags: ['premium'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 8,
-    rating: 4.9,
-    reviewCount: 67,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '4',
-    name: 'Cascade Waterfall Faucet',
-    slug: 'cascade-waterfall-faucet',
-    description: 'Modern waterfall bathroom faucet',
-    shortDescription: 'Waterfall faucet',
-    price: 8499,
-    currency: 'INR',
-    images: [{ id: '4', url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800', alt: 'Faucet', position: 0 }],
-    category: { id: '3', name: 'Bath Fittings', slug: 'bath-fittings', description: '', image: '', productCount: 0 },
-    categoryId: '3',
-    variants: [],
-    tags: ['modern'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 45,
-    rating: 4.5,
-    reviewCount: 156,
-    featured: false,
-    createdAt: '',
-    updatedAt: '',
-  },
-];
 
 const categories: Category[] = [
-  {
-    id: '1',
-    name: 'Bath Fittings',
-    slug: 'bath-fittings',
-    description: 'Premium bathroom luxury',
-    image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800',
-    productCount: 0,
-  },
-  {
-    id: '2',
-    name: 'Hardware',
-    slug: 'hardware',
-    description: 'Quality hardware solutions',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
-    productCount: 0,
-  },
-  {
-    id: '3',
-    name: 'Lighting',
-    slug: 'lighting',
-    description: 'Illuminate your space with elegance',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-    productCount: 0,
-  },
-  {
-    id: '4',
-    name: 'Fans',
-    slug: 'fans',
-    description: 'Premium comfort meets style',
-    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800',
-    productCount: 0,
-  },
-  {
-    id: '5',
-    name: 'Home Decor',
-    slug: 'home-decor',
-    description: 'Elevate your living space',
-    image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800',
-    productCount: 0,
-  },
-  {
-    id: '6',
-    name: 'Furniture',
-    slug: 'furniture',
-    description: 'Timeless furniture pieces',
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800',
-    productCount: 0,
-  },
-  {
-    id: '7',
-    name: 'Carpet & Rugs',
-    slug: 'carpet-rugs',
-    description: 'Luxurious floor coverings',
-    image: 'https://images.unsplash.com/photo-1600166898405-da9535204843?w=800',
-    productCount: 0,
-  },
-  {
-    id: '8',
-    name: 'Perfume',
-    slug: 'perfume',
-    description: 'Signature fragrances',
-    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
-    productCount: 0,
-  },
+  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
+  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
+  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space with elegance', image: '', productCount: 0 },
+  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort meets style', image: '', productCount: 0 },
+  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
+  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
+  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
+  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
 ];
 
 const features = [
@@ -182,7 +34,7 @@ const features = [
 ];
 
 export default function Index() {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(mockProducts.slice(0, 4));
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { setProducts: setStoreProducts } = useProductStore();
 
   useEffect(() => {
@@ -255,14 +107,7 @@ export default function Index() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         {/* Background */}
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1920"
-            alt="Luxury Interior"
-            className="w-full h-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
 
         <div className="relative container mx-auto px-4 lg:px-8 py-20 text-center">
           <motion.div
@@ -370,13 +215,8 @@ export default function Index() {
               >
                 <Link
                   to={`/collections/${category.slug}`}
-                  className="group block relative aspect-[3/4] overflow-hidden rounded-sm"
+                  className="group block relative aspect-[3/4] overflow-hidden rounded-sm bg-card border border-border"
                 >
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
                     <h3 className="text-lg md:text-xl font-display font-semibold text-foreground mb-1">
@@ -429,86 +269,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Luxury Banner */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative overflow-hidden rounded-sm"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920"
-              alt="Luxury Interior"
-              className="w-full h-[500px] object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-            <div className="absolute inset-0 flex items-center">
-              <div className="container mx-auto px-4 lg:px-8">
-                <div className="max-w-xl">
-                  <span className="text-primary text-sm tracking-widest uppercase mb-4 block">
-                    New Collection
-                  </span>
-                  <h2 className="text-4xl md:text-5xl font-display font-semibold mb-6">
-                    The Art of
-                    <br />
-                    <span className="text-gradient-gold">Illumination</span>
-                  </h2>
-                  <p className="text-muted-foreground mb-8">
-                    Discover our latest collection of designer lighting fixtures, 
-                    crafted to transform your space into a work of art.
-                  </p>
-                  <Button
-                    size="lg"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                    asChild
-                  >
-                    <Link to="/collections/lighting">
-                      Explore Collection
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-24 bg-card/30 border-y border-border">
-        <div className="container mx-auto px-4 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-display font-semibold mb-16">
-              What Our <span className="text-gradient-gold">Clients Say</span>
-            </h2>
-            <div className="max-w-3xl mx-auto">
-              <blockquote className="text-2xl md:text-3xl font-display italic text-foreground/90 mb-8">
-                "Azzaro Home transformed our living space beyond imagination. The quality and 
-                attention to detail in their products is unmatched."
-              </blockquote>
-              <div className="flex items-center justify-center gap-4">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100"
-                  alt="Client"
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div className="text-left">
-                  <p className="font-medium">Priya Sharma</p>
-                  <p className="text-sm text-muted-foreground">Interior Designer, Mumbai</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       <Footer />
     </div>
