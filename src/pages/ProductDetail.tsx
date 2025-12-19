@@ -107,13 +107,18 @@ const relatedProducts: Product[] = [
 export default function ProductDetail() {
   const { slug } = useParams();
   const { addItem } = useCartStore();
-  const { getProductBySlug } = useProductStore();
+  const { getProductBySlug, products } = useProductStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product>(mockProduct);
 
-  // Get product from store or fallback to mock
-  const product = getProductBySlug(slug || '') || mockProduct;
+  useEffect(() => {
+    const foundProduct = getProductBySlug(slug || '');
+    if (foundProduct) {
+      setProduct(foundProduct);
+    }
+  }, [slug, getProductBySlug, products]);
   
   useEffect(() => {
     if (product.variants.length > 0) {
