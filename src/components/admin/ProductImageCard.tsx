@@ -27,7 +27,7 @@ export function ProductImageCard({ product, index, accessToken, onUpdateProduct 
               <>
                 <img
                   src={product.imageUrl}
-                  alt={Object.values(product)[1] || 'Product'}
+                  alt={String(Object.values(product)[1] || 'Product')}
                   className="w-full h-full object-cover"
                   onLoad={() => console.log('Image loaded:', product.imageUrl)}
                   onError={(e) => {
