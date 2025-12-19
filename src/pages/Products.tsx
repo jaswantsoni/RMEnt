@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, Loader2 } from 'lucide-react';
 import { loadPublicProducts, type PublicProduct } from '@/lib/publicProductLoader';
 import { convertDriveImageUrl } from '@/lib/imageUtils';
+import { getCategoryInfo } from '@/lib/categoryUtils';
 import { useProductStore } from '@/store/productStore';
 import type { Product } from '@/types/api';
 
@@ -26,9 +27,12 @@ export default function Products() {
     const loadProducts = async () => {
       try {
         const publicProducts = await loadPublicProducts();
+        console.log('Public Products:', publicProducts);
         
         const formattedProducts: Product[] = publicProducts.map(p => {
-          console.log('Product data from Drive:', p); // Debug log
+          const categoryName = p.Category || p.category || p['CATEGORY'] || 'General';
+          const categoryInfo = getCategoryInfo(categoryName);
+          console.log('Category mapping:', categoryName, '→', categoryInfo); // Debug
           return {
             id: p.id || p['Product ID'] || p['ID'] || 'unknown',
             name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
@@ -38,8 +42,15 @@ export default function Products() {
             price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
             currency: 'INR',
             images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
-            category: { id: '1', name: p.category || p['Category'] || p['CATEGORY'] || 'General', slug: 'general', description: '', image: '', productCount: 0 },
-            categoryId: '1',
+            category: { 
+              id: categoryInfo.id, 
+              name: categoryName, 
+              slug: categoryInfo.slug, 
+              description: '', 
+              image: '', 
+              productCount: 0 
+            },
+            categoryId: categoryInfo.id,
             variants: [],
             tags: [],
             specifications: [],
@@ -60,6 +71,7 @@ export default function Products() {
         // Extract unique categories
         const uniqueCategories = [...new Set(publicProducts.map(p => p.category).filter(Boolean))];
         setCategories(uniqueCategories);
+        console.log("unique Categories", uniqueCategories)
         
       } catch (error) {
         console.error('Failed to load products:', error);

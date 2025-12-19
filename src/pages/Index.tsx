@@ -10,6 +10,7 @@ import type { Product, Category } from '@/types/api';
 
 import { loadPublicProducts } from '@/lib/publicProductLoader';
 import { convertDriveImageUrl } from '@/lib/imageUtils';
+import { getCategoryInfo } from '@/lib/categoryUtils';
 import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
 
@@ -43,52 +44,74 @@ export default function Index() {
       try {
         const products = await loadPublicProducts();
         if (products.length > 0) {
-          const formattedProducts: Product[] = products.slice(0, 4).map(p => ({
-            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
-            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
-            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
-            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
-            shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
-            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
-            currency: 'INR',
-            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
-            category: { id: '1', name: p.category || p['Category'] || p['CATEGORY'] || 'General', slug: 'general', description: '', image: '', productCount: 0 },
-            categoryId: '1',
-            variants: [],
-            tags: [],
-            specifications: [],
-            inStock: true,
-            stockQuantity: 10,
-            rating: 4.5,
-            reviewCount: 50,
-            featured: true,
-            createdAt: '',
-            updatedAt: '',
-          }));
+          const formattedProducts: Product[] = products.slice(0, 4).map(p => {
+            const categoryName = p.Category || p.category || p['CATEGORY'] || 'General';
+            const categoryInfo = getCategoryInfo(categoryName);
+            return {
+              id: p.id || p['Product ID'] || p['ID'] || 'unknown',
+              name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
+              slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
+              description: p.description || p['Description'] || p['DESCRIPTION'] || '',
+              shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
+              price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
+              currency: 'INR',
+              images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
+              category: { 
+                id: categoryInfo.id, 
+                name: categoryName, 
+                slug: categoryInfo.slug, 
+                description: '', 
+                image: '', 
+                productCount: 0 
+              },
+              categoryId: categoryInfo.id,
+              variants: [],
+              tags: [],
+              specifications: [],
+              inStock: true,
+              stockQuantity: 10,
+              rating: 4.5,
+              reviewCount: 50,
+              featured: true,
+              createdAt: '',
+              updatedAt: '',
+            };
+          });
           setFeaturedProducts(formattedProducts);
-          // Also store all products for detail page access
-          const allFormattedProducts = products.map(p => ({
-            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
-            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
-            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
-            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
-            shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
-            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
-            currency: 'INR',
-            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
-            category: { id: '1', name: p.category || p['Category'] || p['CATEGORY'] || 'General', slug: 'general', description: '', image: '', productCount: 0 },
-            categoryId: '1',
-            variants: [],
-            tags: [],
-            specifications: [],
-            inStock: true,
-            stockQuantity: 10,
-            rating: 4.5,
-            reviewCount: 50,
-            featured: true,
-            createdAt: '',
-            updatedAt: '',
-          }));
+          
+          const allFormattedProducts = products.map(p => {
+            const categoryName = p.Category || p.category || p['CATEGORY'] || 'General';
+            const categoryInfo = getCategoryInfo(categoryName);
+            return {
+              id: p.id || p['Product ID'] || p['ID'] || 'unknown',
+              name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
+              slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
+              description: p.description || p['Description'] || p['DESCRIPTION'] || '',
+              shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
+              price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
+              currency: 'INR',
+              images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
+              category: { 
+                id: categoryInfo.id, 
+                name: categoryName, 
+                slug: categoryInfo.slug, 
+                description: '', 
+                image: '', 
+                productCount: 0 
+              },
+              categoryId: categoryInfo.id,
+              variants: [],
+              tags: [],
+              specifications: [],
+              inStock: true,
+              stockQuantity: 10,
+              rating: 4.5,
+              reviewCount: 50,
+              featured: true,
+              createdAt: '',
+              updatedAt: '',
+            };
+          });
           setStoreProducts(allFormattedProducts);
         }
       } catch (error) {

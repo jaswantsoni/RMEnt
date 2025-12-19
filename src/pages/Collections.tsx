@@ -24,12 +24,15 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import type { Product, Category } from '@/types/api';
+import { loadPublicProducts } from '@/lib/publicProductLoader';
+import { convertDriveImageUrl } from '@/lib/imageUtils';
+import { getCategoryInfo } from '@/lib/categoryUtils';
 import { useProductStore } from '@/store/productStore';
 
 const categories: Category[] = [
   { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
   { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
-  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: '', productCount: 0 },
+  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: '', productCount: 30 },
   { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort & style', image: '', productCount: 0 },
   { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
   { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
@@ -40,7 +43,7 @@ const categories: Category[] = [
 export default function Collections() {
   const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { products: storeProducts } = useProductStore();
+  const { products: storeProducts, setProducts: setStoreProducts } = useProductStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [priceRange, setPriceRange] = useState([0, 100000]);
@@ -48,12 +51,72 @@ export default function Collections() {
 
   const currentCategory = categories.find((c) => c.slug === category);
 
+  // Load products from Drive
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const publicProducts = await loadPublicProducts();
+        console.log('Raw products from Drive:', publicProducts.length);
+        const formattedProducts: Product[] = publicProducts.map(p => {
+          const categoryName = p.Category || p.category || p['CATEGORY'] || 'General';
+          const categoryInfo = getCategoryInfo(categoryName);
+          console.log('Mapping product:', p.name || p['Product Name'], 'Category:', categoryName, 'Slug:', categoryInfo.slug);
+          return {
+            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
+            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
+            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
+            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
+            shortDescription: (p.description || p['Description'] || '').substring(0, 100) + '...',
+            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
+            currency: 'INR',
+            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
+            category: { 
+              id: '3', 
+              name: 'Lighting', 
+              slug: 'lighting', 
+              description: '', 
+              image: '', 
+              productCount: 0 
+            },
+            categoryId: '3',
+            variants: [],
+            tags: [],
+            specifications: [],
+            inStock: true,
+            stockQuantity: 10,
+            rating: 4.5,
+            reviewCount: 50,
+            featured: false,
+            createdAt: '',
+            updatedAt: '',
+          };
+        });
+        setStoreProducts(formattedProducts);
+        console.log('Formatted products:', formattedProducts.length);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      }
+    };
+    loadProducts();
+  }, [setStoreProducts]);
+
   useEffect(() => {
     let filtered = [...storeProducts];
+    console.log('All store products:', storeProducts.length);
+    console.log('Category filter:', category);
+    console.log('Sample product categories:', storeProducts.slice(0, 3).map(p => ({ name: p.name, category: p.category })));
 
-    if (category) {
-      filtered = filtered.filter((p) => p.category?.slug === category);
-    }
+    // Temporarily show all products regardless of category
+    // if (category) {
+    //   filtered = filtered.filter((p) => {
+    //     const matches = p.category?.slug === category;
+    //     if (!matches) {
+    //       console.log(`Product ${p.name} category ${p.category?.slug} doesn't match ${category}`);
+    //     }
+    //     return matches;
+    //   });
+    //   console.log('Filtered products for category:', filtered.length);
+    // }
 
     filtered = filtered.filter(
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
@@ -77,13 +140,15 @@ export default function Collections() {
   }, [category, priceRange, sortBy, storeProducts]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR',
+      currency: 'USD',
       maximumFractionDigits: 0,
     }).format(price);
   };
 
+  console.log("products", products)
+  console.log("JSON file :", )
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -168,7 +233,7 @@ export default function Collections() {
                                 : 'text-muted-foreground hover:text-foreground'
                             }`}
                           >
-                            {cat.name} ({cat.productCount})
+                            {cat.name}
                           </Link>
                         ))}
                       </div>

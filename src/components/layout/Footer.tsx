@@ -67,9 +67,12 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block mb-6">
-              <h2 className="text-3xl font-display font-semibold tracking-wider">
-                <span className="text-gradient-gold">AZZARO</span>
-                <span className="text-foreground/80 text-xl ml-1">HOME</span>
+              <h2 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
+                <span className="text-gradient-gold flex">
+                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' />
+                  AZZARO HOME
+                  </span>
+                {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
               </h2>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
@@ -78,11 +81,11 @@ export function Footer() {
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span>123 Design District, Mumbai, India 400001</span>
+                <span>2420 Celsius Ave, Unit K, Oxnard, CA 93030, USA</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+91 98765 43210</span>
+                <span>+1607-661-1111</span>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary" />

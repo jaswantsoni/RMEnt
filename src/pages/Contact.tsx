@@ -19,17 +19,17 @@ const contactInfo = [
   {
     icon: Phone,
     title: 'Phone',
-    details: ['+91 98765 43210', '+91 22 1234 5678'],
+    details: ['+1607-661-1111'],
   },
   {
     icon: Mail,
     title: 'Email',
-    details: ['hello@azzarohome.com', 'support@azzarohome.com'],
+    details: ['hello@azzarohome.com', 'niti@azzarohome.com'],
   },
   {
     icon: MapPin,
     title: 'Address',
-    details: ['123 Design District', 'Mumbai, India 400001'],
+    details: ['2420 Celsius Ave, Unit K, Oxnard, CA 93030, USA'],
   },
   {
     icon: Clock,
@@ -98,7 +98,7 @@ export default function Contact() {
               {/* Map placeholder */}
               <div className="mt-12 aspect-video rounded-sm overflow-hidden bg-card luxury-border">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.1234567890!2d72.8234567890!3d19.1234567890!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDA3JzI0LjQiTiA3MsKwNDknMjQuNCJF!5e0!3m2!1sen!2sin!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3299.7535922343673!2d-119.14613302410723!3d34.20377170971368!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80e84eabc9be605b%3A0x434d6eb3e578f5ce!2s2420%20Celsius%20Ave%20STE%20K%2C%20Oxnard%2C%20CA%2093030%2C%20USA!5e0!3m2!1sen!2sin!4v1766173146791!5m2!1sen!2sin"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
