@@ -165,9 +165,14 @@ const allProducts: Product[] = [
 ];
 
 const categories: Category[] = [
-  { id: '1', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: '', productCount: 245 },
-  { id: '2', name: 'Ceiling Fans', slug: 'ceiling-fans', description: 'Premium comfort', image: '', productCount: 89 },
-  { id: '3', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Bathroom luxury', image: '', productCount: 167 },
+  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800', productCount: 0 },
+  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800', productCount: 0 },
+  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800', productCount: 0 },
+  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort & style', image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800', productCount: 0 },
+  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800', productCount: 0 },
+  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800', productCount: 0 },
+  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: 'https://images.unsplash.com/photo-1600166898405-da9535204843?w=800', productCount: 0 },
+  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800', productCount: 0 },
 ];
 
 export default function Collections() {
