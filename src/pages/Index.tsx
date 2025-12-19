@@ -8,8 +8,13 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/button';
 import type { Product, Category } from '@/types/api';
 
-// Mock data for demonstration
-const featuredProducts: Product[] = [
+import { loadPublicProducts } from '@/lib/publicProductLoader';
+import { convertDriveImageUrl } from '@/lib/imageUtils';
+import { useProductStore } from '@/store/productStore';
+import { useState, useEffect } from 'react';
+
+// Products will be loaded from Google Drive
+const mockProducts: Product[] = [
   {
     id: '1',
     name: 'Aurora Crystal Chandelier',
@@ -137,6 +142,71 @@ const features = [
 ];
 
 export default function Index() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(mockProducts.slice(0, 4));
+  const { setProducts: setStoreProducts } = useProductStore();
+
+  useEffect(() => {
+    // Load products from Google Drive on page load
+    const loadProducts = async () => {
+      try {
+        const products = await loadPublicProducts();
+        if (products.length > 0) {
+          const formattedProducts: Product[] = products.slice(0, 4).map(p => ({
+            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
+            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
+            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
+            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
+            shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
+            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
+            currency: 'INR',
+            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
+            category: { id: '1', name: p.category || p['Category'] || p['CATEGORY'] || 'General', slug: 'general', description: '', image: '', productCount: 0 },
+            categoryId: '1',
+            variants: [],
+            tags: [],
+            specifications: [],
+            inStock: true,
+            stockQuantity: 10,
+            rating: 4.5,
+            reviewCount: 50,
+            featured: true,
+            createdAt: '',
+            updatedAt: '',
+          }));
+          setFeaturedProducts(formattedProducts);
+          // Also store all products for detail page access
+          const allFormattedProducts = products.map(p => ({
+            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
+            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
+            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
+            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
+            shortDescription: (p.description || p['Description'] || '').substring(0, 50) + '...',
+            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
+            currency: 'INR',
+            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
+            category: { id: '1', name: p.category || p['Category'] || p['CATEGORY'] || 'General', slug: 'general', description: '', image: '', productCount: 0 },
+            categoryId: '1',
+            variants: [],
+            tags: [],
+            specifications: [],
+            inStock: true,
+            stockQuantity: 10,
+            rating: 4.5,
+            reviewCount: 50,
+            featured: true,
+            createdAt: '',
+            updatedAt: '',
+          }));
+          setStoreProducts(allFormattedProducts);
+        }
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
