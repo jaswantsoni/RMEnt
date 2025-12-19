@@ -19,9 +19,10 @@ export async function loadPublicProducts(): Promise<PublicProduct[]> {
   }
 
   try {
-    // Use Google Drive API with API key (no OAuth required)
+    // Use direct Google Drive share link (publicly accessible)
     const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files/1UbrOmcZj8KOftlTWw-GoszTJPCwvwtIC?alt=media&key=AIzaSyCN06FG4ZDM1wwjvq5276_6or5EaBDhPG4`
+      `https://drive.google.com/uc?export=download&id=1UbrOmcZj8KOftlTWw-GoszTJPCwvwtIC`,
+      { mode: 'cors' }
     );
     
     if (response.ok) {
@@ -33,6 +34,16 @@ export async function loadPublicProducts(): Promise<PublicProduct[]> {
     }
   } catch (error) {
     console.error('Failed to load from Drive:', error);
+    // Fallback to localStorage if available
+    const stored = localStorage.getItem('azzaro-products');
+    if (stored) {
+      try {
+        cachedProducts = JSON.parse(stored);
+        return cachedProducts;
+      } catch (e) {
+        console.error('Failed to parse stored products:', e);
+      }
+    }
   }
   
   return [];
