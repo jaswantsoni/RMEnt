@@ -1,24 +1,32 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, ShoppingBag, User, Heart, Settings } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, User, Heart, Settings, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+
+const categories = [
+  { name: 'Bath Fittings', slug: 'bath-fittings' },
+  { name: 'Hardware', slug: 'hardware' },
+  { name: 'Lighting', slug: 'lighting' },
+  { name: 'Fans', slug: 'fans' },
+  { name: 'Home Decor', slug: 'home-decor' },
+  { name: 'Furniture', slug: 'furniture' },
+  { name: 'Carpet & Rugs', slug: 'carpet-rugs' },
+  { name: 'Perfume', slug: 'perfume' },
+];
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Collections', href: '/collections' },
-  { name: 'Bath Fittings', href: '/collections/bath-fittings' },
-  { name: 'Hardware', href: '/collections/hardware' },
-  { name: 'Lighting', href: '/collections/lighting' },
-  { name: 'Fans', href: '/collections/fans' },
-  { name: 'Home Decor', href: '/collections/home-decor' },
-  { name: 'Furniture', href: '/collections/furniture' },
-  { name: 'Carpet & Rugs', href: '/collections/carpet-rugs' },
-  { name: 'Perfume', href: '/collections/perfume' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
@@ -69,20 +77,67 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    'text-sm font-medium tracking-wide transition-colors duration-300',
-                    location.pathname === item.href
-                      ? 'text-primary'
-                      : 'text-foreground/70 hover:text-primary'
-                  )}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              <Link
+                to="/"
+                className={cn(
+                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  location.pathname === '/'
+                    ? 'text-primary'
+                    : 'text-foreground/70 hover:text-primary'
+                )}
+              >
+                Home
+              </Link>
+              
+              {/* Categories Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className={cn(
+                  'flex items-center gap-1 text-sm font-medium tracking-wide transition-colors duration-300',
+                  location.pathname.includes('/collections')
+                    ? 'text-primary'
+                    : 'text-foreground/70 hover:text-primary'
+                )}>
+                  Categories
+                  <ChevronDown className="h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/collections" className="w-full cursor-pointer">
+                      All Collections
+                    </Link>
+                  </DropdownMenuItem>
+                  {categories.map((cat) => (
+                    <DropdownMenuItem key={cat.slug} asChild>
+                      <Link to={`/collections/${cat.slug}`} className="w-full cursor-pointer">
+                        {cat.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Link
+                to="/about"
+                className={cn(
+                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  location.pathname === '/about'
+                    ? 'text-primary'
+                    : 'text-foreground/70 hover:text-primary'
+                )}
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className={cn(
+                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  location.pathname === '/contact'
+                    ? 'text-primary'
+                    : 'text-foreground/70 hover:text-primary'
+                )}
+              >
+                Contact
+              </Link>
             </nav>
 
             {/* Actions */}
@@ -177,21 +232,73 @@ export function Header() {
                     <X className="h-6 w-6" />
                   </Button>
                 </div>
-                <nav className="flex-1 p-6 space-y-4">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={cn(
-                        'block py-3 text-lg font-medium transition-colors',
-                        location.pathname === item.href
-                          ? 'text-primary'
-                          : 'text-foreground/70 hover:text-primary'
-                      )}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
+                <nav className="flex-1 p-6 space-y-4 overflow-y-auto">
+                  <Link
+                    to="/"
+                    className={cn(
+                      'block py-2 text-lg font-medium transition-colors',
+                      location.pathname === '/'
+                        ? 'text-primary'
+                        : 'text-foreground/70 hover:text-primary'
+                    )}
+                  >
+                    Home
+                  </Link>
+                  
+                  {/* Categories Section */}
+                  <div className="py-2">
+                    <p className="text-sm text-muted-foreground mb-3 uppercase tracking-wider">Categories</p>
+                    <div className="space-y-2 pl-2">
+                      <Link
+                        to="/collections"
+                        className={cn(
+                          'block py-1.5 text-base font-medium transition-colors',
+                          location.pathname === '/collections'
+                            ? 'text-primary'
+                            : 'text-foreground/70 hover:text-primary'
+                        )}
+                      >
+                        All Collections
+                      </Link>
+                      {categories.map((cat) => (
+                        <Link
+                          key={cat.slug}
+                          to={`/collections/${cat.slug}`}
+                          className={cn(
+                            'block py-1.5 text-base font-medium transition-colors',
+                            location.pathname === `/collections/${cat.slug}`
+                              ? 'text-primary'
+                              : 'text-foreground/70 hover:text-primary'
+                          )}
+                        >
+                          {cat.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Link
+                    to="/about"
+                    className={cn(
+                      'block py-2 text-lg font-medium transition-colors',
+                      location.pathname === '/about'
+                        ? 'text-primary'
+                        : 'text-foreground/70 hover:text-primary'
+                    )}
+                  >
+                    About
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className={cn(
+                      'block py-2 text-lg font-medium transition-colors',
+                      location.pathname === '/contact'
+                        ? 'text-primary'
+                        : 'text-foreground/70 hover:text-primary'
+                    )}
+                  >
+                    Contact
+                  </Link>
                 </nav>
                 <div className="p-6 border-t border-border space-y-3">
                   <Button
