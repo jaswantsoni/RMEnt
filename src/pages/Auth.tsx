@@ -283,7 +283,7 @@ export default function Auth() {
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="+1 98765 43210"
                     value={formData.phone}
                     onChange={handleChange}
                     className="pl-10 bg-card border-border/50 focus:border-primary"

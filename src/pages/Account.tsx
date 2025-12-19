@@ -149,7 +149,7 @@ export default function Account() {
                               <p className="text-sm text-foreground/60">{order.date} • {order.items} items</p>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium">₹{order.total.toLocaleString()}</p>
+                              <p className="font-medium">${order.total.toLocaleString()}</p>
                               <span className={`text-xs px-2 py-1 rounded-full ${
                                 order.status === 'Delivered' ? 'bg-green-500/20 text-green-500' : 'bg-primary/20 text-primary'
                               }`}>
@@ -182,7 +182,7 @@ export default function Account() {
                             <img src={item.images?.[0]?.url || '/placeholder.svg'} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
                             <div>
                               <p className="font-medium line-clamp-1">{item.name}</p>
-                              <p className="text-primary font-semibold">₹{item.price.toLocaleString()}</p>
+                              <p className="text-primary font-semibold">${item.price.toLocaleString()}</p>
                             </div>
                           </div>
                         ))}

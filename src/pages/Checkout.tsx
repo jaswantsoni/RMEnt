@@ -264,7 +264,7 @@ export default function Checkout() {
                               <p className="font-medium text-sm">{item.product.name}</p>
                               <p className="text-foreground/60 text-sm">Qty: {item.quantity}</p>
                             </div>
-                            <p className="font-medium">₹{item.total.toLocaleString()}</p>
+                            <p className="font-medium">${item.total.toLocaleString()}</p>
                           </div>
                         ))}
                       </div>
@@ -288,25 +288,25 @@ export default function Checkout() {
                 <div className="space-y-3 pb-4 border-b border-border/50">
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Subtotal ({cart.items.length} items)</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
+                    <span>${subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
+                    <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Tax (18% GST)</span>
-                    <span>₹{tax.toLocaleString()}</span>
+                    <span>${tax.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="flex justify-between pt-4 text-lg font-semibold">
                   <span>Total</span>
-                  <span className="text-primary">₹{total.toLocaleString()}</span>
+                  <span className="text-primary">${total.toLocaleString()}</span>
                 </div>
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground/60">
                     <Truck className="h-4 w-4" />
-                    Free shipping on orders above ₹5,000
+                    Free shipping on orders above $5,000
                   </div>
                   <div className="flex items-center gap-2 text-sm text-foreground/60">
                     <Shield className="h-4 w-4" />

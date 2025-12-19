@@ -154,7 +154,7 @@ export default function Contact() {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="+1 98765 43210"
                       className="bg-secondary border-border"
                     />
                   </div>
