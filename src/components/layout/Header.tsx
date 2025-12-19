@@ -55,8 +55,11 @@ export function Header() {
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
-                <span className="text-gradient-gold">AZZARO</span>
-                <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span>
+                <span className="text-gradient-gold flex">
+                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' />
+                  AZZARO HOME
+                  </span>
+                {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
               </h1>
             </Link>
 
