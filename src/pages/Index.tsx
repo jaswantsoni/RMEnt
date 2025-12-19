@@ -110,27 +110,67 @@ const mockProducts: Product[] = [
 const categories: Category[] = [
   {
     id: '1',
+    name: 'Bath Fittings',
+    slug: 'bath-fittings',
+    description: 'Premium bathroom luxury',
+    image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800',
+    productCount: 0,
+  },
+  {
+    id: '2',
+    name: 'Hardware',
+    slug: 'hardware',
+    description: 'Quality hardware solutions',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+    productCount: 0,
+  },
+  {
+    id: '3',
     name: 'Lighting',
     slug: 'lighting',
     description: 'Illuminate your space with elegance',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
-    productCount: 245,
+    productCount: 0,
   },
   {
-    id: '2',
-    name: 'Ceiling Fans',
-    slug: 'ceiling-fans',
+    id: '4',
+    name: 'Fans',
+    slug: 'fans',
     description: 'Premium comfort meets style',
     image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800',
-    productCount: 89,
+    productCount: 0,
   },
   {
-    id: '3',
-    name: 'Bath Fittings',
-    slug: 'bath-fittings',
-    description: 'Luxury for your bathroom',
-    image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800',
-    productCount: 167,
+    id: '5',
+    name: 'Home Decor',
+    slug: 'home-decor',
+    description: 'Elevate your living space',
+    image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800',
+    productCount: 0,
+  },
+  {
+    id: '6',
+    name: 'Furniture',
+    slug: 'furniture',
+    description: 'Timeless furniture pieces',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800',
+    productCount: 0,
+  },
+  {
+    id: '7',
+    name: 'Carpet & Rugs',
+    slug: 'carpet-rugs',
+    description: 'Luxurious floor coverings',
+    image: 'https://images.unsplash.com/photo-1600166898405-da9535204843?w=800',
+    productCount: 0,
+  },
+  {
+    id: '8',
+    name: 'Perfume',
+    slug: 'perfume',
+    description: 'Signature fragrances',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
+    productCount: 0,
   },
 ];
 
@@ -319,18 +359,18 @@ export default function Index() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {categories.map((category, index) => (
               <motion.div
                 key={category.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
                 <Link
                   to={`/collections/${category.slug}`}
-                  className="group block relative aspect-[4/5] overflow-hidden rounded-sm"
+                  className="group block relative aspect-[3/4] overflow-hidden rounded-sm"
                 >
                   <img
                     src={category.image}
@@ -338,14 +378,14 @@ export default function Index() {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-8">
-                    <h3 className="text-2xl font-display font-semibold text-foreground mb-2">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
+                    <h3 className="text-lg md:text-xl font-display font-semibold text-foreground mb-1">
                       {category.name}
                     </h3>
-                    <p className="text-muted-foreground mb-4">{category.description}</p>
-                    <span className="inline-flex items-center text-primary font-medium group-hover:gap-3 gap-2 transition-all">
+                    <p className="text-sm text-muted-foreground mb-2 hidden md:block">{category.description}</p>
+                    <span className="inline-flex items-center text-primary text-sm font-medium group-hover:gap-2 gap-1 transition-all">
                       Shop Now
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>
                 </Link>

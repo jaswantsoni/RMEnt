@@ -10,11 +10,15 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Home', href: '/' },
-  { name: 'Products', href: '/products' },
   { name: 'Collections', href: '/collections' },
-  { name: 'Lighting', href: '/collections/lighting' },
-  { name: 'Ceiling Fans', href: '/collections/ceiling-fans' },
   { name: 'Bath Fittings', href: '/collections/bath-fittings' },
+  { name: 'Hardware', href: '/collections/hardware' },
+  { name: 'Lighting', href: '/collections/lighting' },
+  { name: 'Fans', href: '/collections/fans' },
+  { name: 'Home Decor', href: '/collections/home-decor' },
+  { name: 'Furniture', href: '/collections/furniture' },
+  { name: 'Carpet & Rugs', href: '/collections/carpet-rugs' },
+  { name: 'Perfume', href: '/collections/perfume' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
