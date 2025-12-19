@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProductStore } from '@/store/productStore';
 import { motion } from 'framer-motion';
@@ -112,6 +112,9 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product>(mockProduct);
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const foundProduct = getProductBySlug(slug || '');
@@ -173,7 +176,13 @@ export default function ProductDetail() {
               <div 
                 ref={mainImageRef}
                 className="aspect-square overflow-hidden rounded-sm bg-card cursor-zoom-in"
-                onMouseMove={handleImageMouseMove}
+                onMouseMove={(e) => {
+                  if (!mainImageRef.current) return;
+                  const rect = mainImageRef.current.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setZoomPosition({ x, y });
+                }}
                 onMouseEnter={() => setIsZooming(true)}
                 onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
               >

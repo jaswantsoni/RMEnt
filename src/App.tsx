@@ -15,7 +15,6 @@ import Checkout from "./pages/Checkout";
 import Account from "./pages/Account";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
 import ManualUpload from "./pages/ManualUpload";
 import Products from "./pages/Products";
 
