@@ -9,83 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/types/api';
 
-// Mock products for demo - in production, use api.searchProducts()
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Crystal Chandelier Elegance',
-    slug: 'crystal-chandelier-elegance',
-    description: 'Stunning crystal chandelier',
-    shortDescription: 'Premium chandelier',
-    price: 45999,
-    compareAtPrice: 55999,
-    currency: 'INR',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?w=800', alt: 'Chandelier', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['luxury', 'crystal'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 10,
-    rating: 4.8,
-    reviewCount: 24,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '2',
-    name: 'Modern Wall Sconce',
-    slug: 'modern-wall-sconce',
-    description: 'Elegant wall sconce',
-    shortDescription: 'Modern lighting',
-    price: 8999,
-    currency: 'INR',
-    images: [{ id: '2', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800', alt: 'Wall Sconce', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['modern'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 25,
-    rating: 4.5,
-    reviewCount: 18,
-    featured: false,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '3',
-    name: 'Premium Ceiling Fan',
-    slug: 'premium-ceiling-fan',
-    description: 'High-end ceiling fan',
-    shortDescription: 'Premium fan',
-    price: 24999,
-    compareAtPrice: 29999,
-    currency: 'INR',
-    images: [{ id: '3', url: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800', alt: 'Ceiling Fan', position: 0 }],
-    category: { id: '2', name: 'Ceiling Fans', slug: 'ceiling-fans', description: '', image: '', productCount: 0 },
-    categoryId: '2',
-    variants: [],
-    tags: ['premium'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 15,
-    rating: 4.7,
-    reviewCount: 32,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-];
+import { useProductStore } from '@/store/productStore';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { products: storeProducts } = useProductStore();
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -93,7 +24,7 @@ export default function Search() {
       setQuery(q);
       performSearch(q);
     }
-  }, [searchParams]);
+  }, [searchParams, storeProducts]);
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -103,14 +34,12 @@ export default function Search() {
 
     setIsLoading(true);
     try {
-      // In production, use: const response = await api.searchProducts(searchQuery);
-      // For demo, filter mock products
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const filtered = mockProducts.filter(
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const filtered = storeProducts.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category.name.toLowerCase().includes(searchQuery.toLowerCase())
+          p.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setResults(filtered);
     } catch (error) {
@@ -225,24 +154,8 @@ export default function Search() {
               className="text-center py-12"
             >
               <p className="text-foreground/60 text-lg">
-                Start typing to search our premium collection
+                Start typing to search our collection
               </p>
-              <div className="flex flex-wrap justify-center gap-3 mt-6">
-                {['Chandelier', 'Ceiling Fan', 'Wall Sconce', 'Bath Fittings'].map((term) => (
-                  <Button
-                    key={term}
-                    variant="outline"
-                    size="sm"
-                    className="border-border/50"
-                    onClick={() => {
-                      setQuery(term);
-                      setSearchParams({ q: term });
-                    }}
-                  >
-                    {term}
-                  </Button>
-                ))}
-              </div>
             </motion.div>
           )}
         </div>
