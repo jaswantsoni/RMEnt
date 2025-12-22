@@ -56,10 +56,10 @@ export function Header() {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ',
           isScrolled
-            ? 'bg-background/95 backdrop-blur-md border-b border-border/50'
-            : 'bg-transparent'
+            ? 'bg-background/90 backdrop-blur-md'
+            : 'bg-background/100'
         )}
       >
         <div className="container mx-auto px-4 lg:px-8">
@@ -80,7 +80,7 @@ export function Header() {
               <Link
                 to="/"
                 className={cn(
-                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  'text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/'
                     ? 'text-primary'
                     : 'text-foreground/70 hover:text-primary'
@@ -92,7 +92,7 @@ export function Header() {
               {/* Categories Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger className={cn(
-                  'flex items-center gap-1 text-sm font-medium tracking-wide transition-colors duration-300',
+                  'flex items-center gap-1 text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname.includes('/collections')
                     ? 'text-primary'
                     : 'text-foreground/70 hover:text-primary'
@@ -119,7 +119,7 @@ export function Header() {
               <Link
                 to="/about"
                 className={cn(
-                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  'text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/about'
                     ? 'text-primary'
                     : 'text-foreground/70 hover:text-primary'
@@ -130,7 +130,7 @@ export function Header() {
               <Link
                 to="/contact"
                 className={cn(
-                  'text-sm font-medium tracking-wide transition-colors duration-300',
+                  'text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/contact'
                     ? 'text-primary'
                     : 'text-foreground/70 hover:text-primary'
@@ -247,7 +247,7 @@ export function Header() {
                   
                   {/* Categories Section */}
                   <div className="py-2">
-                    <p className="text-sm text-muted-foreground mb-3 uppercase tracking-wider">Categories</p>
+                    <p className="text-lg text-muted-foreground mb-3 uppercase tracking-wider">Categories</p>
                     <div className="space-y-2 pl-2">
                       <Link
                         to="/collections"

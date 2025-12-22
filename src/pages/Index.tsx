@@ -13,7 +13,9 @@ import { convertDriveImageUrl } from '@/lib/imageUtils';
 import { getCategoryInfo } from '@/lib/categoryUtils';
 import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
-
+import { Background } from '@/components/ui/background';
+import { ScrollingBackground } from '@/components/ui/scrolling-background';
+import { cn } from '@/lib/utils';
 // Products will be loaded from Google Drive
 
 const categories: Category[] = [
@@ -123,16 +125,26 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen pt-18">
       <Header />
       <CartDrawer />
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        {/* <ScrollingBackground images={[
+          '/img/ChatGPT Image Dec 23, 2025, 04_46_12 AM.png'
+        ]}/> */}
 
-        <div className="relative container mx-auto px-4 lg:px-8 py-20 text-center">
+        <div className={cn("absolute inset-0")}>
+              <img
+                src={"/img/ChatGPT Image Dec 23, 2025, 04_46_12 AM.png"}
+                alt={"test"}
+                className={cn("w-full h-full object-cover")}
+              />
+              <div className={cn("absolute")} />
+            </div>
+        <div className="relative container px-4 lg:px-8 py-20 text-left">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -146,11 +158,11 @@ export default function Index() {
               <br />
               <span className="text-gradient-gold">Living Space</span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-              Discover exquisite lighting, premium ceiling fans, and luxurious bath fittings 
+            <span className="text-xl text-left text-muted-foreground max-w-[50vw] mx-auto mb-12">
+              Discover exquisite lighting, premium ceiling fans, and luxurious bath fittings<p/> 
               that transform your home into a masterpiece.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            </span>
+            <div className="flex flex-col sm:flex-row items-center justify-left gap-4">
               <Button
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 h-14 text-base"
@@ -172,8 +184,9 @@ export default function Index() {
             </div>
           </motion.div>
         </div>
+        {/* <img src="/img/ChatGPT Image Dec 23, 2025, 04_46_12 AM.png" className='mr-12' height={60} width={600}/> */}
 
-        {/* Scroll indicator */}
+        
         <motion.div
           className="absolute bottom-10 left-1/2 -translate-x-1/2"
           animate={{ y: [0, 10, 0] }}
@@ -186,7 +199,8 @@ export default function Index() {
       </section>
 
       {/* Features Bar */}
-      <section className="border-y border-border bg-card/50">
+      <section className="border-y border-border ">
+        
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
             {features.map((feature, index) => (
@@ -210,7 +224,12 @@ export default function Index() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-24">
+      <section className="py-24 backdrop-blur-sm ">
+        {/* <ScrollingBackground images={[
+          'bg/huy-nguyen-fQgYAnWVFeo-unsplash.jpg',
+          'https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+          'https://images.unsplash.com/photo-1615875605825-5eb9bb5c609e?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+        ]}/> */}
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -259,7 +278,7 @@ export default function Index() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 bg-card/30">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
