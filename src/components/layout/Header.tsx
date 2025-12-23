@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import NavBar from './NavBar';
 
 const categories = [
   { name: 'Bath Fittings', slug: 'bath-fittings' },
@@ -77,7 +78,7 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              <Link
+              {/* <Link
                 to="/"
                 className={cn(
                   'text-lg font-medium tracking-wide transition-colors duration-300',
@@ -87,44 +88,47 @@ export function Header() {
                 )}
               >
                 Home
-              </Link>
-              
+              </Link> */}
               {/* Categories Dropdown */}
-              <DropdownMenu>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger className={cn(
                   'flex items-center gap-1 text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname.includes('/collections')
-                    ? 'text-primary'
-                    : 'text-foreground/70 hover:text-primary'
-                )}>
+                  ? 'text-primary'
+                  : 'text-foreground/70 hover:text-primary'
+                  )}>
                   Categories
                   <ChevronDown className="h-4 w-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="w-48">
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link to="/collections" className="w-full cursor-pointer">
-                      All Collections
-                    </Link>
+                  <Link to="/collections" className="w-full cursor-pointer">
+                  All Collections
+                  </Link>
                   </DropdownMenuItem>
                   {categories.map((cat) => (
                     <DropdownMenuItem key={cat.slug} asChild>
-                      <Link to={`/collections/${cat.slug}`} className="w-full cursor-pointer">
-                        {cat.name}
-                      </Link>
+                    <Link to={`/collections/${cat.slug}`} className="w-full cursor-pointer">
+                    {cat.name}
+                    </Link>
                     </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    ))}
+                    </DropdownMenuContent>
+                    </DropdownMenu> */}
 
+            </nav>
+
+            {/* Actions */}
+            <div className="flex items-center space-x-4">
               <Link
                 to="/about"
                 className={cn(
                   'text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/about'
-                    ? 'text-primary'
-                    : 'text-foreground/70 hover:text-primary'
+                  ? 'text-primary'
+                  : 'text-foreground/70 hover:text-primary'
                 )}
-              >
+                >
                 About
               </Link>
               <Link
@@ -132,22 +136,18 @@ export function Header() {
                 className={cn(
                   'text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/contact'
-                    ? 'text-primary'
-                    : 'text-foreground/70 hover:text-primary'
+                  ? 'text-primary'
+                  : 'text-foreground/70 hover:text-primary'
                 )}
-              >
+                >
                 Contact
               </Link>
-            </nav>
-
-            {/* Actions */}
-            <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-foreground/70 hover:text-primary"
                 onClick={() => navigate('/search')}
-              >
+                >
                 <Search className="h-5 w-5" />
               </Button>
               <Button
@@ -155,7 +155,7 @@ export function Header() {
                 size="icon"
                 className="relative text-foreground/70 hover:text-primary hidden sm:flex"
                 onClick={() => navigate('/wishlist')}
-              >
+                >
                 <Heart className="h-5 w-5" />
                 {wishlistItems.length > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium rounded-full">
@@ -168,7 +168,7 @@ export function Header() {
                 size="icon"
                 className="text-foreground/70 hover:text-primary hidden sm:flex"
                 onClick={() => navigate(isAuthenticated ? '/account' : '/auth')}
-              >
+                >
                 {isAuthenticated ? (
                   <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
                     {user?.firstName?.[0]}
@@ -182,7 +182,7 @@ export function Header() {
                 size="icon"
                 className="relative text-foreground/70 hover:text-primary"
                 onClick={openCart}
-              >
+                >
                 <ShoppingBag className="h-5 w-5" />
                 {cart && cart.itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium rounded-full">
@@ -195,11 +195,15 @@ export function Header() {
                 size="icon"
                 className="lg:hidden text-foreground/70"
                 onClick={() => setIsMobileMenuOpen(true)}
-              >
+                >
                 <Menu className="h-6 w-6" />
               </Button>
             </div>
           </div>
+        </div>
+        <div className="container mx-auto px-4 lg:px-8">
+
+        <NavBar/>
         </div>
       </header>
 

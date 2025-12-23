@@ -13,8 +13,6 @@ import { convertDriveImageUrl } from '@/lib/imageUtils';
 import { getCategoryInfo } from '@/lib/categoryUtils';
 import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
-import { Background } from '@/components/ui/background';
-import { ScrollingBackground } from '@/components/ui/scrolling-background';
 import { cn } from '@/lib/utils';
 // Products will be loaded from Google Drive
 
