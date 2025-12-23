@@ -14,6 +14,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import NavBar from './NavBar';
+import { MegaNavbar } from '../MegaNavbar';
+import { sampleNavCategories } from "@/data/sampleNavData";
+import { toast } from "sonner";
 
 const categories = [
   { name: 'Bath Fittings', slug: 'bath-fittings' },
@@ -57,7 +60,7 @@ export function Header() {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
           isScrolled
             ? 'bg-background/90 backdrop-blur-md'
             : 'bg-background/100'
@@ -201,10 +204,19 @@ export function Header() {
             </div>
           </div>
         </div>
-        <div className="container mx-auto px-4 lg:px-8">
-
-        <NavBar/>
-        </div>
+        {/* <div className="container mx-auto px-4 lg:px-8"> */}
+        <MegaNavbar
+        categories={sampleNavCategories}
+        showSearch={false}
+        showUserIcon={false}
+        showCartIcon={false}
+        onSearchClick={() => toast("Search clicked")}
+        onUserClick={() => toast("Account clicked")}
+        onCartClick={() => toast("Cart clicked")}
+        cartItemCount={2}
+      />
+        {/* <NavBar/> */}
+        {/* </div> */}
       </header>
 
       {/* Mobile Menu */}

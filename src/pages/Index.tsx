@@ -123,7 +123,7 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="min-h-screen pt-18">
+    <div className="min-h-screen pt-18 min-w-[100vw] bg-background">
       <Header />
       <CartDrawer />
 

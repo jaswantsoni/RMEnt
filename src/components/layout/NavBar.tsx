@@ -30,25 +30,19 @@ const NavBar = () => {
         // console.log("show3", show3)
     }, [show1, show2])
     return (
-        <div>
-            <div className="flex space-x-5 justify-around my-5 border-y py-4 border-gold-light">
+        <div onMouseLeave={()=>{setShow1(false)}} >
+            <div className="flex space-x-5 justify-around mt-5 border-y py-4 border-gold-light">
                 {categories.map((category, index) => (
                     <button key={index} tabIndex={0} onMouseEnter={() => { setShow1(true); setSubCategories(category.subcategories) }} className={cn(
-                        'text-lg font-medium tracking-wide transition-colors duration-300',
-                        location.pathname === '/contact'
-                            ? 'text-primary'
-                            : 'text-foreground/70 hover:text-primary'
+                        'text-lg font-medium tracking-wide transition-colors duration-300 text-foreground/70 hover:text-primary'
                     )}>{category.category}</button>
 
                 ))}
             </div>
             <div className={cn('flex space-x-5 justify-around mb-5 border-b py-4 border-gold-light', show1 ? '' : 'hidden')}>
                 {subCategories.map((subcategory, index) => (
-                    <button key={index} tabIndex={0} onMouseLeave={()=>{}} className={cn(
-                        'text-lg font-medium tracking-wide transition-colors duration-300',
-                        location.pathname === '/contact'
-                            ? 'text-primary'
-                            : 'text-foreground/70 hover:text-primary'
+                    <button key={index} tabIndex={0} className={cn(
+                        'text-lg font-medium tracking-wide transition-colors duration-300 text-foreground/70 hover:text-primary'
                     )}>{subcategory.name}</button>
 
                 ))}
