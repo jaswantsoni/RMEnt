@@ -17,6 +17,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ManualUpload from "./pages/ManualUpload";
 import Products from "./pages/Products";
+import ShopifyProducts from "./pages/ShopifyProducts";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/account" element={<Account />} />
           <Route path="/account/:tab" element={<Account />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/shopify" element={<ShopifyProducts />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/manual-upload" element={<ManualUpload />} />
           <Route path="*" element={<NotFound />} />

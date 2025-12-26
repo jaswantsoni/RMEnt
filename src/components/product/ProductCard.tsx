@@ -36,11 +36,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     : 0;
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(price / 100); // Convert cents back to dollars
   };
 
   return (

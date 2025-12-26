@@ -26,7 +26,7 @@ const createEmptyCart = (): Cart => ({
   tax: 0,
   shipping: 0,
   total: 0,
-  currency: 'INR',
+  currency: 'USD',
   itemCount: 0,
 });
 

@@ -26,7 +26,7 @@ Perfect for dining rooms, foyers, or grand living spaces, the Aurora brings a to
   shortDescription: 'Elegant hand-cut crystal chandelier with gold finish',
   price: 45999,
   compareAtPrice: 59999,
-  currency: 'INR',
+  currency: 'USD',
   images: [
     { id: '1', url: 'https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?w=1200', alt: 'Crystal Chandelier', position: 0 },
     { id: '2', url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1200', alt: 'Chandelier Detail', position: 1 },
@@ -65,7 +65,7 @@ const relatedProducts: Product[] = [
     description: 'Industrial style pendant light',
     shortDescription: 'Industrial pendant',
     price: 12999,
-    currency: 'INR',
+    currency: 'USD',
     images: [{ id: '2', url: 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=800', alt: 'Pendant Light', position: 0 }],
     category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
     categoryId: '1',
@@ -87,7 +87,7 @@ const relatedProducts: Product[] = [
     description: 'Minimalist wall sconce',
     shortDescription: 'Minimalist sconce',
     price: 6999,
-    currency: 'INR',
+    currency: 'USD',
     images: [{ id: '5', url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800', alt: 'Wall Sconce', position: 0 }],
     category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
     categoryId: '1',
@@ -130,11 +130,11 @@ export default function ProductDetail() {
   }, [product]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(price / 100); // Convert cents back to dollars
   };
 
   const currentPrice = selectedVariant?.price || product.price;

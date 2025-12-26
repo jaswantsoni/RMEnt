@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Filter, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
+import { Filter, Grid3X3, LayoutGrid, ChevronDown, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { ProductCard } from '@/components/product/ProductCard';
+import { ProductCardSkeleton } from '@/components/product/ProductCardSkeleton';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -24,131 +25,110 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import type { Product, Category } from '@/types/api';
-import { loadPublicProducts } from '@/lib/publicProductLoader';
-import { convertDriveImageUrl } from '@/lib/imageUtils';
-import { getCategoryInfo } from '@/lib/categoryUtils';
+import { ShopifyApiService } from '@/lib/shopifyApi';
 import { useProductStore } from '@/store/productStore';
 
-const categories: Category[] = [
-  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
-  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
-  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space', image: '', productCount: 30 },
-  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort & style', image: '', productCount: 0 },
-  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
-  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
-  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
-  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
-];
+
 
 export default function Collections() {
   const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { products: storeProducts, setProducts: setStoreProducts } = useProductStore();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [gridCols, setGridCols] = useState<3 | 4>(4);
   const [priceRange, setPriceRange] = useState([0, 100000]);
-  const [sortBy, setSortBy] = useState('newest');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const currentCategory = categories.find((c) => c.slug === category);
 
-  // Load products from Drive
+  const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
+    try {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
+      
+      const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder);
+      
+      if (fetchedProducts.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      
+      const newAllProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
+      setAllProducts(newAllProducts);
+      setStoreProducts(newAllProducts);
+      
+      // Generate categories with actual product counts
+      const categoryMap = new Map<string, Category>();
+      newAllProducts.forEach(product => {
+        const cat = product.category;
+        if (categoryMap.has(cat.slug)) {
+          categoryMap.get(cat.slug)!.productCount++;
+        } else {
+          categoryMap.set(cat.slug, { ...cat, productCount: 1 });
+        }
+      });
+      setCategories(Array.from(categoryMap.values()));
+      
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [allProducts, setStoreProducts, sortBy, sortOrder]);
+
+  // Infinite scroll
   useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const publicProducts = await loadPublicProducts();
-        console.log('Raw products from Drive:', publicProducts.length);
-        const formattedProducts: Product[] = publicProducts.map(p => {
-          const categoryName = p.Category || p.category || p['CATEGORY'] || 'General';
-          const categoryInfo = getCategoryInfo(categoryName);
-          console.log('Mapping product:', p.name || p['Product Name'], 'Category:', categoryName, 'Slug:', categoryInfo.slug);
-          return {
-            id: p.id || p['Product ID'] || p['ID'] || 'unknown',
-            name: p.name || p['Product Name'] || p['Name'] || p['PRODUCT NAME'] || 'Unnamed Product',
-            slug: (p.name || p['Product Name'] || p['Name'] || 'unnamed-product').toLowerCase().replace(/\s+/g, '-'),
-            description: p.description || p['Description'] || p['DESCRIPTION'] || '',
-            shortDescription: (p.description || p['Description'] || '').substring(0, 100) + '...',
-            price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
-            currency: 'INR',
-            images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
-            category: { 
-              id: '3', 
-              name: 'Lighting', 
-              slug: 'lighting', 
-              description: '', 
-              image: '', 
-              productCount: 0 
-            },
-            categoryId: '3',
-            variants: [],
-            tags: [],
-            specifications: [],
-            inStock: true,
-            stockQuantity: 10,
-            rating: 4.5,
-            reviewCount: 50,
-            featured: false,
-            createdAt: '',
-            updatedAt: '',
-          };
-        });
-        setStoreProducts(formattedProducts);
-        console.log('Formatted products:', formattedProducts.length);
-      } catch (error) {
-        console.error('Failed to load products:', error);
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        if (!loadingMore && hasMore) {
+          setPage(prev => prev + 1);
+        }
       }
     };
-    loadProducts();
-  }, [setStoreProducts]);
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, hasMore]);
 
   useEffect(() => {
-    let filtered = [...storeProducts];
-    console.log('All store products:', storeProducts.length);
-    console.log('Category filter:', category);
-    console.log('Sample product categories:', storeProducts.slice(0, 3).map(p => ({ name: p.name, category: p.category })));
+    loadProducts(1, true);
+  }, []);
 
-    // Temporarily show all products regardless of category
-    // if (category) {
-    //   filtered = filtered.filter((p) => {
-    //     const matches = p.category?.slug === category;
-    //     if (!matches) {
-    //       console.log(`Product ${p.name} category ${p.category?.slug} doesn't match ${category}`);
-    //     }
-    //     return matches;
-    //   });
-    //   console.log('Filtered products for category:', filtered.length);
-    // }
+  useEffect(() => {
+    if (page > 1) {
+      loadProducts(page);
+    }
+  }, [page, loadProducts]);
 
-    filtered = filtered.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
-    );
+  useEffect(() => {
+    let filtered = [...allProducts];
 
-    switch (sortBy) {
-      case 'price_asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price_desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
-        break;
-      default:
-        break;
+    if (category) {
+      filtered = filtered.filter((p) => p.category?.slug === category);
     }
 
+
+
     setProducts(filtered);
-  }, [category, priceRange, sortBy, storeProducts]);
+  }, [category, priceRange, sortBy, allProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(price);
+      minimumFractionDigits: 2,
+    }).format(price / 100); // Convert cents back to dollars
   };
 
-  console.log("products", products)
-  console.log("JSON file :", )
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -260,15 +240,23 @@ export default function Collections() {
               </Sheet>
 
               {/* Sort */}
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+                const [newSortBy, newSortOrder] = value.split('-');
+                setSortBy(newSortBy);
+                setSortOrder(newSortOrder);
+                setPage(1);
+                setHasMore(true);
+                loadProducts(1, true);
+              }}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                  <SelectItem value="rating">Top Rated</SelectItem>
+                  <SelectItem value="created_at-desc">Newest First</SelectItem>
+                  <SelectItem value="title-asc">Name A-Z</SelectItem>
+                  <SelectItem value="title-desc">Name Z-A</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -349,22 +337,37 @@ export default function Collections() {
 
             {/* Products */}
             <div className="flex-1">
-              {products.length === 0 ? (
+              {loading ? (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {[...Array(20)].map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : products.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-muted-foreground">No products found</p>
                 </div>
               ) : (
-                <div
-                  className={`grid gap-6 ${
-                    gridCols === 3
-                      ? 'sm:grid-cols-2 lg:grid-cols-3'
-                      : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  }`}
-                >
-                  {products.map((product, index) => (
-                    <ProductCard key={product.id} product={product} index={index} />
-                  ))}
-                </div>
+                <>
+                  <div
+                    className={`grid gap-6 ${
+                      gridCols === 3
+                        ? 'sm:grid-cols-2 lg:grid-cols-3'
+                        : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                    }`}
+                  >
+                    {products.map((product, index) => (
+                      <ProductCard key={product.id} product={product} index={index} />
+                    ))}
+                  </div>
+                  {loadingMore && (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
+                      {[...Array(20)].map((_, i) => (
+                        <ProductCardSkeleton key={i} />
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
