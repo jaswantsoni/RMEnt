@@ -25,52 +25,96 @@ export default function Products() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isScrollLoading, setIsScrollLoading] = useState(false);
 
   const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
+    if (isScrollLoading && !reset) return; // Prevent multiple scroll requests
+    
     try {
       if (pageNum === 1) setLoading(true);
-      else setLoadingMore(true);
+      else {
+        setLoadingMore(true);
+        setIsScrollLoading(true);
+      }
       
       const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder);
       
-      if (fetchedProducts.length === 0) {
+      if (fetchedProducts.length === 0 || fetchedProducts.length < 20) {
         setHasMore(false);
+      }
+      
+      if (fetchedProducts.length === 0) {
         return;
       }
       
-      setProducts(prev => reset ? fetchedProducts : [...prev, ...fetchedProducts]);
-      setStoreProducts(products);
+      setProducts(prev => {
+        const newProducts = reset ? fetchedProducts : [...prev, ...fetchedProducts];
+        
+        // Remove duplicates based on product ID
+        const uniqueProducts = newProducts.filter((product, index, self) => 
+          index === self.findIndex(p => p.id === product.id)
+        );
+        
+        setStoreProducts(uniqueProducts);
+        return uniqueProducts;
+      });
       
       // Extract unique categories
-      const allProducts = reset ? fetchedProducts : [...products, ...fetchedProducts];
-      const uniqueCategories = [...new Set(allProducts.map(p => p.category.name).filter(Boolean))];
-      setCategories(uniqueCategories);
+      setCategories(prev => {
+        setProducts(current => {
+          const uniqueCategories = [...new Set(current.map(p => p.category.name).filter(Boolean))];
+          return current;
+        });
+        return [...new Set(products.map(p => p.category.name).filter(Boolean))];
+      });
       
     } catch (error) {
       console.error('Failed to load products:', error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      setIsScrollLoading(false);
     }
-  }, [products, setStoreProducts, sortBy, sortOrder]);
+  }, [setStoreProducts, sortBy, sortOrder, isScrollLoading]);
 
-  // Infinite scroll
+  // Infinite scroll with throttling
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-        if (!loadingMore && hasMore) {
+        if (!loadingMore && !isScrollLoading && hasMore) {
           setPage(prev => prev + 1);
         }
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMore]);
+    const throttledScroll = throttle(handleScroll, 500); // Throttle to 500ms
+    window.addEventListener('scroll', throttledScroll);
+    return () => window.removeEventListener('scroll', throttledScroll);
+  }, [loadingMore, isScrollLoading, hasMore]);
+
+  // Throttle function
+  function throttle(func: Function, delay: number) {
+    let timeoutId: NodeJS.Timeout;
+    let lastExecTime = 0;
+    return function (...args: any[]) {
+      const currentTime = Date.now();
+      
+      if (currentTime - lastExecTime > delay) {
+        func(...args);
+        lastExecTime = currentTime;
+      } else {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          func(...args);
+          lastExecTime = Date.now();
+        }, delay - (currentTime - lastExecTime));
+      }
+    };
+  }
 
   useEffect(() => {
     loadProducts(1, true);
-  }, []);
+  }, [sortBy, sortOrder]);
 
   useEffect(() => {
     if (page > 1) {

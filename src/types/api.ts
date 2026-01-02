@@ -37,6 +37,7 @@ export interface Product {
   featured: boolean;
   createdAt: string;
   updatedAt: string;
+  sku: string;
 }
 
 export interface ProductImage {
@@ -48,13 +49,14 @@ export interface ProductImage {
 
 export interface ProductVariant {
   id: string;
-  name: string;
+  title: string;
   sku: string;
   price: number;
   compareAtPrice?: number;
-  inStock: boolean;
-  stockQuantity: number;
-  options: VariantOption[];
+  inStock?: boolean;
+  stockQuantity?: number;
+  inventory?: number;
+  options?: VariantOption[];
 }
 
 export interface VariantOption {

@@ -40,7 +40,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(price / 100); // Convert cents back to dollars
+    }).format(price / 1); // Convert cents back to dollars
   };
 
   return (
@@ -54,7 +54,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       <div className="relative bg-card rounded-sm overflow-hidden luxury-border hover-lift">
         {/* Image Container with Zoom */}
         <Link 
-          to={`/product/${product.slug}`} 
+          to={`/product/${product.sku || product.item_id}`} 
           className="block relative aspect-square overflow-hidden"
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsZooming(true)}
@@ -62,8 +62,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         >
           <div ref={imageRef} className="w-full h-full">
             <img
-              src={product.images[0]?.url || '/placeholder.svg'}
-              alt={product.images[0]?.alt || product.name}
+              src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
+              alt={product.images?.[0]?.alt || product.name}
               className="w-full h-full object-cover transition-transform duration-500 ease-out"
               style={{
                 transform: isZooming ? 'scale(1.5)' : 'scale(1)',
@@ -122,19 +122,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         {/* Product Info */}
         <div className="p-4">
-          <Link to={`/collections/${product.category?.slug}`}>
+          <Link to={`/collections/${product.category?.slug || 'general'}`}>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-              {product.category?.name}
+              {product.category?.name || 'General'}
             </p>
           </Link>
-          <Link to={`/product/${product.slug}`}>
+          <Link to={`/product/${product.sku || product.item_id}`}>
             <h3 className="font-display text-lg font-medium text-foreground mb-2 line-clamp-1 hover:text-primary transition-colors">
               {product.name}
             </h3>
           </Link>
           
           {/* Rating */}
-          {product.rating > 0 && (
+          {product.rating && product.rating > 0 && (
             <div className="flex items-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -148,7 +148,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 />
               ))}
               <span className="text-xs text-muted-foreground ml-1">
-                ({product.reviewCount})
+                ({product.reviewCount || 0})
               </span>
             </div>
           )}
@@ -156,7 +156,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Price */}
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">
-              {formatPrice(product.price)}
+              {formatPrice(product.rate || product.price || 0)}
             </span>
             {product.compareAtPrice && (
               <span className="text-sm text-muted-foreground line-through">

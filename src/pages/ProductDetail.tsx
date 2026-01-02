@@ -13,96 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/api';
 import { cn } from '@/lib/utils';
 
-// Mock product data
-const mockProduct: Product = {
-  id: '1',
-  name: 'Aurora Crystal Chandelier',
-  slug: 'aurora-crystal-chandelier',
-  description: `The Aurora Crystal Chandelier is a masterpiece of modern lighting design. Featuring hand-cut crystal elements that catch and refract light beautifully, this chandelier creates a stunning visual display in any room.
 
-Each crystal is meticulously selected and polished to ensure maximum brilliance and clarity. The gold-finished frame provides an elegant contrast to the clear crystals, making this piece a true statement of luxury.
-
-Perfect for dining rooms, foyers, or grand living spaces, the Aurora brings a touch of opulence to your home while providing warm, ambient lighting.`,
-  shortDescription: 'Elegant hand-cut crystal chandelier with gold finish',
-  price: 45999,
-  compareAtPrice: 59999,
-  currency: 'USD',
-  images: [
-    { id: '1', url: 'https://images.unsplash.com/photo-1543198126-a8ad8e47fb22?w=1200', alt: 'Crystal Chandelier', position: 0 },
-    { id: '2', url: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1200', alt: 'Chandelier Detail', position: 1 },
-    { id: '3', url: 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=1200', alt: 'Chandelier Room', position: 2 },
-  ],
-  category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-  categoryId: '1',
-  variants: [
-    { id: 'v1', name: 'Small (60cm)', sku: 'AUR-S', price: 45999, inStock: true, stockQuantity: 10, options: [{ name: 'Size', value: 'Small' }] },
-    { id: 'v2', name: 'Medium (80cm)', sku: 'AUR-M', price: 59999, inStock: true, stockQuantity: 5, options: [{ name: 'Size', value: 'Medium' }] },
-    { id: 'v3', name: 'Large (100cm)', sku: 'AUR-L', price: 79999, inStock: false, stockQuantity: 0, options: [{ name: 'Size', value: 'Large' }] },
-  ],
-  tags: ['luxury', 'crystal', 'chandelier'],
-  specifications: [
-    { name: 'Material', value: 'Crystal, Gold-plated Steel' },
-    { name: 'Dimensions', value: '60cm x 60cm x 45cm' },
-    { name: 'Weight', value: '12 kg' },
-    { name: 'Bulb Type', value: 'E14, Max 40W x 8' },
-    { name: 'Color Temperature', value: 'Warm White (3000K)' },
-    { name: 'Installation', value: 'Ceiling Mounted' },
-  ],
-  inStock: true,
-  stockQuantity: 15,
-  rating: 4.8,
-  reviewCount: 124,
-  featured: true,
-  createdAt: '',
-  updatedAt: '',
-};
-
-const relatedProducts: Product[] = [
-  {
-    id: '2',
-    name: 'Noir Industrial Pendant',
-    slug: 'noir-industrial-pendant',
-    description: 'Industrial style pendant light',
-    shortDescription: 'Industrial pendant',
-    price: 12999,
-    currency: 'USD',
-    images: [{ id: '2', url: 'https://images.unsplash.com/photo-1524484485831-a92ffc0de03f?w=800', alt: 'Pendant Light', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['industrial'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 32,
-    rating: 4.6,
-    reviewCount: 89,
-    featured: true,
-    createdAt: '',
-    updatedAt: '',
-  },
-  {
-    id: '5',
-    name: 'Eclipse Wall Sconce',
-    slug: 'eclipse-wall-sconce',
-    description: 'Minimalist wall sconce',
-    shortDescription: 'Minimalist sconce',
-    price: 6999,
-    currency: 'USD',
-    images: [{ id: '5', url: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800', alt: 'Wall Sconce', position: 0 }],
-    category: { id: '1', name: 'Lighting', slug: 'lighting', description: '', image: '', productCount: 0 },
-    categoryId: '1',
-    variants: [],
-    tags: ['minimalist'],
-    specifications: [],
-    inStock: true,
-    stockQuantity: 25,
-    rating: 4.7,
-    reviewCount: 45,
-    featured: false,
-    createdAt: '',
-    updatedAt: '',
-  },
-];
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -111,7 +22,7 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
-  const [product, setProduct] = useState<Product>(mockProduct);
+  const [product, setProduct] = useState<Product | null>(null);
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const mainImageRef = useRef<HTMLDivElement>(null);
@@ -124,7 +35,7 @@ export default function ProductDetail() {
   }, [slug, getProductBySlug, products]);
   
   useEffect(() => {
-    if (product.variants.length > 0) {
+    if (product?.variants?.length > 0) {
       setSelectedVariant(product.variants[0]);
     }
   }, [product]);
@@ -134,8 +45,22 @@ export default function ProductDetail() {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(price / 100); // Convert cents back to dollars
+    }).format(price / 100);
   };
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground">Product not found</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const currentPrice = selectedVariant?.price || product.price;
   const discount = product.compareAtPrice
@@ -188,7 +113,7 @@ export default function ProductDetail() {
               >
                 <img
                   src={product.images[selectedImage]?.url}
-                  alt={product.images[selectedImage]?.alt}
+                  alt={product.name}
                   className="w-full h-full object-cover transition-transform duration-300 ease-out"
                   style={{
                     transform: isZooming ? 'scale(2)' : 'scale(1)',
@@ -208,7 +133,7 @@ export default function ProductDetail() {
                   >
                     <img
                       src={image.url}
-                      alt={image.alt}
+                      alt={product.name}
                       className="w-full h-full object-cover"
                     />
                   </button>
@@ -283,16 +208,16 @@ export default function ProductDetail() {
                       <button
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}
-                        disabled={!variant.inStock}
+                        disabled={variant.inventory === 0}
                         className={cn(
                           'px-4 py-2 border rounded-sm transition-colors',
                           selectedVariant?.id === variant.id
                             ? 'border-primary bg-primary/10 text-primary'
                             : 'border-border hover:border-primary/50',
-                          !variant.inStock && 'opacity-50 cursor-not-allowed line-through'
+                          !variant.inventory && 'opacity-50 cursor-not-allowed line-through'
                         )}
                       >
-                        {variant.name}
+                        {variant.title}
                       </button>
                     ))}
                   </div>
@@ -321,7 +246,7 @@ export default function ProductDetail() {
                     </Button>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {selectedVariant?.stockQuantity || product.stockQuantity} in stock
+                    {selectedVariant?.inventory || product.stockQuantity} in stock
                   </span>
                 </div>
               </div>
@@ -332,7 +257,7 @@ export default function ProductDetail() {
                   size="lg"
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => addItem(product, selectedVariant, quantity)}
-                  disabled={!selectedVariant?.inStock && !product.inStock}
+                  disabled={!selectedVariant?.inventory && !product.inStock}
                 >
                   Add to Cart
                 </Button>
@@ -422,8 +347,8 @@ export default function ProductDetail() {
             You May Also <span className="text-gradient-gold">Like</span>
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
+            {products.slice(0, 4).map((relatedProduct, index) => (
+              <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} />
             ))}
           </div>
         </section>

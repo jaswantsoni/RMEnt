@@ -28,6 +28,8 @@ import type { Product, Category } from '@/types/api';
 import { ShopifyApiService } from '@/lib/shopifyApi';
 import { useProductStore } from '@/store/productStore';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+
 
 
 export default function Collections() {
@@ -37,7 +39,7 @@ export default function Collections() {
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -45,10 +47,12 @@ export default function Collections() {
   const [priceRange, setPriceRange] = useState([0, 100000]);
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [preloaded, setPreloaded] = useState(false);
 
   const currentCategory = categories.find((c) => c.slug === category);
-
+  console.log("products in store:", storeProducts);
   const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
+    console.log('Loading products for page:', pageNum);
     try {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
@@ -63,6 +67,7 @@ export default function Collections() {
       const newAllProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
       setAllProducts(newAllProducts);
       setStoreProducts(newAllProducts);
+      console.log('Fetched products:', fetchedProducts);
       
       // Generate categories with actual product counts
       const categoryMap = new Map<string, Category>();
@@ -98,8 +103,68 @@ export default function Collections() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore]);
 
+  // Load products with pagination
   useEffect(() => {
-    loadProducts(1, true);
+    const loadInitialProducts = async () => {
+      if (storeProducts.length > 0) {
+        setAllProducts(storeProducts);
+        setPreloaded(true);
+        
+        // Generate categories
+        const categoryMap = new Map<string, Category>();
+        storeProducts.forEach((product: Product) => {
+          if (product.category) {
+            const cat = product.category;
+            if (!categoryMap.has(cat.slug)) {
+              categoryMap.set(cat.slug, { ...cat, productCount: 0 });
+            }
+          }
+        });
+        setCategories(Array.from(categoryMap.values()));
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/products?page=1&limit=50`);
+        const data = await response.json();
+        
+        console.log('API Response:', data); // Debug log
+        
+        const products = data.data || []; // Use data.data since API returns {success, data, pagination}
+        setAllProducts(products);
+        setStoreProducts(products);
+        setPreloaded(true);
+        
+        console.log('Loaded products:', products); // Debug log
+        
+        // Generate categories
+        const categoryMap = new Map<string, Category>();
+        products.forEach((product: Product) => {
+          if (product.category) {
+            const cat = product.category;
+            if (!categoryMap.has(cat.slug)) {
+              categoryMap.set(cat.slug, { 
+                id: cat.id, 
+                name: cat.name, 
+                slug: cat.slug, 
+                description: cat.description,
+                image: cat.image,
+                productCount: 0 
+              });
+            }
+          }
+        });
+        setCategories(Array.from(categoryMap.values()));
+        
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadInitialProducts();
   }, []);
 
   useEffect(() => {
@@ -108,14 +173,17 @@ export default function Collections() {
     }
   }, [page, loadProducts]);
 
+  // Filter products
   useEffect(() => {
+    if (!Array.isArray(allProducts)) return;
+    
     let filtered = [...allProducts];
 
     if (category) {
-      filtered = filtered.filter((p) => p.category?.slug === category);
+      filtered = filtered.filter((p: Product) => {
+        return p.category?.slug === category;
+      });
     }
-
-
 
     setProducts(filtered);
   }, [category, priceRange, sortBy, allProducts]);
@@ -285,7 +353,7 @@ export default function Collections() {
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-64 flex-shrink-0">
-              <div className="sticky top-28 space-y-8">
+              <div className="space-y-8">
                 {/* Categories */}
                 <div>
                   <h4 className="font-medium mb-4">Categories</h4>
@@ -310,7 +378,7 @@ export default function Collections() {
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        {cat.name} ({cat.productCount})
+                        {cat.name}
                       </Link>
                     ))}
                   </div>
@@ -360,13 +428,6 @@ export default function Collections() {
                       <ProductCard key={product.id} product={product} index={index} />
                     ))}
                   </div>
-                  {loadingMore && (
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
-                      {[...Array(20)].map((_, i) => (
-                        <ProductCardSkeleton key={i} />
-                      ))}
-                    </div>
-                  )}
                 </>
               )}
             </div>
