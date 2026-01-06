@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useProductStore } from '@/store/productStore';
 import { motion } from 'framer-motion';
 import { Minus, Plus, Heart, Share2, Truck, Shield, RefreshCw, Star, ChevronRight } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
@@ -18,26 +17,69 @@ import { cn } from '@/lib/utils';
 export default function ProductDetail() {
   const { slug } = useParams();
   const { addItem } = useCartStore();
-  const { getProductBySlug, products } = useProductStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const foundProduct = getProductBySlug(slug || '');
-    if (foundProduct) {
-      setProduct(foundProduct);
-    }
-  }, [slug, getProductBySlug, products]);
+    const loadProduct = async () => {
+      if (!slug) return;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${slug}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            const apiProduct = result.data;
+            // Transform API response to match Product interface
+            const transformedProduct = {
+              id: apiProduct.item_id,
+              name: apiProduct.name,
+              slug: apiProduct.item_id,
+              description: apiProduct.description || apiProduct.enhanced_description || '',
+              shortDescription: apiProduct.description || '',
+              price: apiProduct.rate * 100, // Convert to cents
+              compareAtPrice: apiProduct.sales_rate !== apiProduct.rate ? apiProduct.sales_rate * 100 : undefined,
+              currency: 'USD',
+              images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
+              category: { id: '1', name: apiProduct.category || 'Uncategorized', slug: 'uncategorized', description: '', image: '', productCount: 0 },
+              categoryId: '1',
+              variants: [],
+              tags: apiProduct.zoho_data?.tags || [],
+              specifications: [],
+              inStock: apiProduct.available_stock > 0,
+              stockQuantity: apiProduct.available_stock,
+              rating: 5,
+              reviewCount: 0,
+              featured: false,
+              createdAt: apiProduct.created_at,
+              updatedAt: apiProduct.updated_at,
+              sku: apiProduct.sku,
+              rate: apiProduct.rate,
+              item_id: apiProduct.item_id,
+              image_url: apiProduct.image_url,
+            };
+            setProduct(transformedProduct);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load product:', error);
+      }
+    };
+    
+    loadProduct();
+  }, [slug]);
   
   useEffect(() => {
     if (product?.variants?.length > 0) {
       setSelectedVariant(product.variants[0]);
     }
+    console.log('Selected variant set to:', product);
   }, [product]);
 
   const formatPrice = (price: number) => {
@@ -112,7 +154,7 @@ export default function ProductDetail() {
                 onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
               >
                 <img
-                  src={product.images[selectedImage]?.url}
+                  src={product.images?.[selectedImage]?.url || '/placeholder.jpg'}
                   alt={product.name}
                   className="w-full h-full object-cover transition-transform duration-300 ease-out"
                   style={{
@@ -122,7 +164,7 @@ export default function ProductDetail() {
                 />
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {product.images.map((image, index) => (
+                {product.images?.map((image, index) => (
                   <button
                     key={image.id}
                     onClick={() => setSelectedImage(index)}
@@ -137,7 +179,7 @@ export default function ProductDetail() {
                       className="w-full h-full object-cover"
                     />
                   </button>
-                ))}
+                )) || []}
               </div>
             </motion.div>
 
@@ -200,11 +242,11 @@ export default function ProductDetail() {
               <p className="text-muted-foreground">{product.shortDescription}</p>
 
               {/* Variants */}
-              {product.variants.length > 0 && (
+              {product.variants?.length > 0 && (
                 <div>
                   <h3 className="font-medium mb-3">Size</h3>
                   <div className="flex flex-wrap gap-3">
-                    {product.variants.map((variant) => (
+                    {product.variants?.map((variant) => (
                       <button
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}
@@ -313,16 +355,16 @@ export default function ProductDetail() {
             </TabsList>
             <TabsContent value="description" className="py-8">
               <div className="prose prose-invert max-w-none">
-                {product.description.split('\n\n').map((paragraph, i) => (
+                {product.description?.split('\n\n').map((paragraph, i) => (
                   <p key={i} className="text-muted-foreground mb-4">
                     {paragraph}
                   </p>
-                ))}
+                )) || <p className="text-muted-foreground">No description available.</p>}
               </div>
             </TabsContent>
             <TabsContent value="specifications" className="py-8">
               <div className="grid sm:grid-cols-2 gap-4">
-                {product.specifications.map((spec) => (
+                {product.specifications?.map((spec) => (
                   <div
                     key={spec.name}
                     className="flex justify-between py-3 border-b border-border"
@@ -330,7 +372,7 @@ export default function ProductDetail() {
                     <span className="text-muted-foreground">{spec.name}</span>
                     <span className="font-medium">{spec.value}</span>
                   </div>
-                ))}
+                )) || <p className="text-muted-foreground">No specifications available.</p>}
               </div>
             </TabsContent>
             <TabsContent value="reviews" className="py-8">
@@ -347,7 +389,7 @@ export default function ProductDetail() {
             You May Also <span className="text-gradient-gold">Like</span>
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.slice(0, 4).map((relatedProduct, index) => (
+            {relatedProducts.slice(0, 4).map((relatedProduct, index) => (
               <ProductCard key={relatedProduct.id} product={relatedProduct} index={index} />
             ))}
           </div>

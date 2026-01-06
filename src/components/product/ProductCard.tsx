@@ -18,6 +18,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { toggleItem, isInWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
   
+  console.log('Rendering ProductCard for:', product);
   // Zoom state
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
@@ -54,7 +55,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       <div className="relative bg-card rounded-sm overflow-hidden luxury-border hover-lift">
         {/* Image Container with Zoom */}
         <Link 
-          to={`/product/${product.sku || product.item_id}`} 
+          to={`/product/${product.item_id}`} 
           className="block relative aspect-square overflow-hidden"
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsZooming(true)}
@@ -127,7 +128,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               {product.category?.name || 'General'}
             </p>
           </Link>
-          <Link to={`/product/${product.sku || product.item_id}`}>
+          <Link to={`/product/${product.item_id}`}>
             <h3 className="font-display text-lg font-medium text-foreground mb-2 line-clamp-1 hover:text-primary transition-colors">
               {product.name}
             </h3>

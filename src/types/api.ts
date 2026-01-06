@@ -17,8 +17,10 @@ export interface PaginatedResponse<T> {
 // Product Types
 export interface Product {
   id: string;
+  item_id: string;
   name: string;
   slug: string;
+  image_url: string;
   description: string;
   shortDescription: string;
   price: number;
@@ -38,6 +40,7 @@ export interface Product {
   createdAt: string;
   updatedAt: string;
   sku: string;
+  rate?: number;
 }
 
 export interface ProductImage {
