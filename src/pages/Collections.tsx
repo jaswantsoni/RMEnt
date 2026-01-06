@@ -59,8 +59,12 @@ export default function Collections() {
       
       const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder);
       
-      if (fetchedProducts.length === 0) {
+      // Only set hasMore to false if we get less than the requested amount
+      if (fetchedProducts.length < 20) {
         setHasMore(false);
+      }
+      
+      if (fetchedProducts.length === 0) {
         return;
       }
       
