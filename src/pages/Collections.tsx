@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Filter, Grid3X3, LayoutGrid, ChevronDown, Loader2 } from 'lucide-react';
@@ -48,6 +48,8 @@ export default function Collections() {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [preloaded, setPreloaded] = useState(false);
+  const loadingRef = useRef(false);
+  const lastCallRef = useRef(0);
 
   const currentCategory = categories.find((c) => c.slug === category);
   console.log("products in store:", allProducts);
@@ -55,6 +57,15 @@ export default function Collections() {
   console.log("loading:", loading);
   console.log("category:", category);
   const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
+    // Prevent duplicate calls within 1 second
+    const now = Date.now();
+    if (now - lastCallRef.current < 1000) return;
+    lastCallRef.current = now;
+    
+    // Prevent concurrent calls
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
     console.log('Loading products for page:', pageNum);
     try {
       if (pageNum === 1) setLoading(true);
@@ -139,23 +150,32 @@ export default function Collections() {
     } finally {
       setLoading(false);
       setLoadingMore(false);
+      loadingRef.current = false;
     }
   }, [allProducts, sortBy, sortOrder, category, categories, priceRange]);
 
-  // Infinite scroll
+  // Throttled infinite scroll
   useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
+    
     const handleScroll = () => {
-      if (loading || loadingMore) return; // Stop scrolling when loading
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-        if (!loadingMore && hasMore) {
-          setPage(prev => prev + 1);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (loading || loadingMore || loadingRef.current) return;
+        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+          if (!loadingMore && hasMore) {
+            setPage(prev => prev + 1);
+          }
         }
-      }
+      }, 200);
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadingMore, hasMore]);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [loading, loadingMore, hasMore]);
 
   // Load categories on component mount
   useEffect(() => {
@@ -195,16 +215,18 @@ export default function Collections() {
 
   // Load initial products and reload when filters change
   useEffect(() => {
+    if (loadingRef.current) return;
+    
     setPage(1);
     setHasMore(true);
     // Only load products if categories are loaded
     if (categories.length > 0 || !category) {
       loadProducts(1, true);
     }
-  }, [category, priceRange, categories]);
+  }, [category, priceRange]);
 
   useEffect(() => {
-    if (page > 1) {
+    if (page > 1 && !loadingRef.current) {
       loadProducts(page);
     }
   }, [page]);

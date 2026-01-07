@@ -8,7 +8,7 @@ import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MegaNavbar } from '../MegaNavbar';
-import { CategoryApiService, type ApiCategory } from '@/lib/categoryApi';
+import { CategoryCache } from '@/lib/categoryCache';
 import { toast } from "sonner";
 
 const navigation = [
@@ -37,21 +37,8 @@ export function Header() {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const fetchedCategories = await CategoryApiService.fetchCategories();
-      // Transform API categories to NavCategory format
-      const transformedCategories = fetchedCategories.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        href: `/collections/${cat.slug}`,
-        image: cat.image_url,
-        subcategories: cat.subcategories.map(sub => ({
-          id: sub.id,
-          name: sub.name,
-          href: `/collections/${sub.slug}`,
-          image: sub.image_url
-        }))
-      }));
-      setCategories(transformedCategories);
+      const categories = await CategoryCache.getCategories();
+      setCategories(categories);
     };
     loadCategories();
   }, []);
