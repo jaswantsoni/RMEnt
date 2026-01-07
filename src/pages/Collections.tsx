@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import type { Product, Category } from '@/types/api';
+import type { Product, Category, Subcategory } from '@/types/api';
 import { ShopifyApiService } from '@/lib/shopifyApi';
 import { useProductStore } from '@/store/productStore';
 
@@ -35,9 +35,8 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 export default function Collections() {
   const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { products: storeProducts, setProducts: setStoreProducts } = useProductStore();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const { products: allProducts, setProducts: setAllProducts } = useProductStore();
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -50,16 +49,47 @@ export default function Collections() {
   const [preloaded, setPreloaded] = useState(false);
 
   const currentCategory = categories.find((c) => c.slug === category);
-  console.log("products in store:", storeProducts);
+  console.log("products in store:", allProducts);
+  console.log("filtered products:", filteredProducts);
+  console.log("loading:", loading);
+  console.log("category:", category);
   const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
     console.log('Loading products for page:', pageNum);
     try {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
       
-      const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder);
+      // Find category/subcategory ID for filtering
+      let categoryId: string | undefined;
+      let subcategoryId: string | undefined;
       
-      // Only set hasMore to false if we get less than the requested amount
+      if (category) {
+        // Check if it's a main category
+        const mainCategory = categories.find(cat => cat.slug === category);
+        if (mainCategory) {
+          categoryId = mainCategory.id;
+        } else {
+          // Check if it's a subcategory
+          for (const cat of categories) {
+            const subcat = cat.subcategories?.find(sub => sub.slug === category);
+            if (subcat) {
+              subcategoryId = subcat.id;
+              break;
+            }
+          }
+        }
+      }
+      
+      const filters = {
+        ...(categoryId && { category_id: categoryId }),
+        ...(subcategoryId && { subcategory_id: subcategoryId }),
+        ...(priceRange[0] > 0 && { min_price: priceRange[0] }),
+        ...(priceRange[1] < 100000 && { max_price: priceRange[1] })
+      };
+      
+      const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder, filters);
+      
+      // Set hasMore based on fetched products count
       if (fetchedProducts.length < 20) {
         setHasMore(false);
       }
@@ -68,22 +98,21 @@ export default function Collections() {
         return;
       }
       
-      const newAllProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
-      setAllProducts(newAllProducts);
-      setStoreProducts(newAllProducts);
-      console.log('Fetched products:', fetchedProducts);
+      const newProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
+      setAllProducts(newProducts);
       
-      // Generate categories with actual product counts
-      const categoryMap = new Map<string, Category>();
-      newAllProducts.forEach(product => {
-        const cat = product.category;
-        if (categoryMap.has(cat.slug)) {
-          categoryMap.get(cat.slug)!.productCount++;
-        } else {
-          categoryMap.set(cat.slug, { ...cat, productCount: 1 });
+      // Load categories from localStorage if available
+      const storedCategories = localStorage.getItem('azzaro_categories');
+      if (storedCategories) {
+        try {
+          const parsedCategories = JSON.parse(storedCategories);
+          setCategories(parsedCategories);
+        } catch (e) {
+          console.error('Error parsing stored categories:', e);
         }
-      });
-      setCategories(Array.from(categoryMap.values()));
+      }
+      
+      console.log('Fetched products:', fetchedProducts);
       
     } catch (error) {
       console.error('Failed to load products:', error);
@@ -91,11 +120,12 @@ export default function Collections() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [allProducts, setStoreProducts, sortBy, sortOrder]);
+  }, [allProducts, sortBy, sortOrder, category, categories, priceRange]);
 
   // Infinite scroll
   useEffect(() => {
     const handleScroll = () => {
+      if (loading || loadingMore) return; // Stop scrolling when loading
       if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
         if (!loadingMore && hasMore) {
           setPage(prev => prev + 1);
@@ -107,90 +137,23 @@ export default function Collections() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore]);
 
-  // Load products with pagination
+  // Load initial products and reload when filters change
   useEffect(() => {
-    const loadInitialProducts = async () => {
-      if (storeProducts.length > 0) {
-        setAllProducts(storeProducts);
-        setPreloaded(true);
-        
-        // Generate categories
-        const categoryMap = new Map<string, Category>();
-        storeProducts.forEach((product: Product) => {
-          if (product.category) {
-            const cat = product.category;
-            if (!categoryMap.has(cat.slug)) {
-              categoryMap.set(cat.slug, { ...cat, productCount: 0 });
-            }
-          }
-        });
-        setCategories(Array.from(categoryMap.values()));
-        return;
-      }
-      
-      setLoading(true);
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/products?page=1&limit=50`);
-        const data = await response.json();
-        
-        console.log('API Response:', data); // Debug log
-        
-        const products = data.data || []; // Use data.data since API returns {success, data, pagination}
-        setAllProducts(products);
-        setStoreProducts(products);
-        setPreloaded(true);
-        
-        console.log('Loaded products:', products); // Debug log
-        
-        // Generate categories
-        const categoryMap = new Map<string, Category>();
-        products.forEach((product: Product) => {
-          if (product.category) {
-            const cat = product.category;
-            if (!categoryMap.has(cat.slug)) {
-              categoryMap.set(cat.slug, { 
-                id: cat.id, 
-                name: cat.name, 
-                slug: cat.slug, 
-                description: cat.description,
-                image: cat.image,
-                productCount: 0 
-              });
-            }
-          }
-        });
-        setCategories(Array.from(categoryMap.values()));
-        
-      } catch (error) {
-        console.error('Failed to load products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadInitialProducts();
-  }, []);
+    setPage(1);
+    setHasMore(true);
+    loadProducts(1, true);
+  }, [category, priceRange]);
 
   useEffect(() => {
     if (page > 1) {
       loadProducts(page);
     }
-  }, [page, loadProducts]);
+  }, [page]);
 
-  // Filter products
+  // Set filtered products to all products since filtering is server-side
   useEffect(() => {
-    if (!Array.isArray(allProducts)) return;
-    
-    let filtered = [...allProducts];
-
-    if (category) {
-      filtered = filtered.filter((p: Product) => {
-        return p.category?.slug === category;
-      });
-    }
-
-    setProducts(filtered);
-  }, [category, priceRange, sortBy, allProducts]);
+    setFilteredProducts(allProducts);
+  }, [allProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -253,10 +216,11 @@ export default function Collections() {
       <section className="py-12">
         <div className="container mx-auto px-4 lg:px-8">
           {/* Toolbar */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <p className="text-muted-foreground">
-              Showing {products.length} products
-            </p>
+          <div className="sticky top-40 bg-background z-10 pb-4 mb-4 border-b border-border">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            {/* <p className="text-muted-foreground">
+              Showing {filteredProducts.length} products
+            </p> */}
             <div className="flex items-center gap-4">
               {/* Filter Button - Mobile */}
               <Sheet>
@@ -276,17 +240,35 @@ export default function Collections() {
                       <h4 className="font-medium mb-4">Categories</h4>
                       <div className="space-y-3">
                         {categories.map((cat) => (
-                          <Link
-                            key={cat.id}
-                            to={`/collections/${cat.slug}`}
-                            className={`block text-sm transition-colors ${
-                              category === cat.slug
-                                ? 'text-primary'
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            {cat.name}
-                          </Link>
+                          <div key={cat.id}>
+                            <Link
+                              to={`/collections/${cat.slug}`}
+                              className={`block text-sm font-medium transition-colors ${
+                                category === cat.slug
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              {cat.name}
+                            </Link>
+                            {cat.subcategories && cat.subcategories.length > 0 && (
+                              <div className="ml-4 mt-2 space-y-2">
+                                {cat.subcategories.map((subcat: Subcategory) => (
+                                  <Link
+                                    key={subcat.id}
+                                    to={`/collections/${subcat.slug}`}
+                                    className={`block text-xs transition-colors ${
+                                      category === subcat.slug
+                                        ? 'text-primary'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                  >
+                                    {subcat.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -353,11 +335,12 @@ export default function Collections() {
               </div>
             </div>
           </div>
+          </div>
 
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 flex-shrink-0">
-              <div className="space-y-8">
+            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-64 self-start max-h-[calc(100vh-12rem)] overflow-y-auto">
+              <div className="space-y-8 pr-4">
                 {/* Categories */}
                 <div>
                   <h4 className="font-medium mb-4">Categories</h4>
@@ -373,23 +356,41 @@ export default function Collections() {
                       All Products
                     </Link>
                     {categories.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        to={`/collections/${cat.slug}`}
-                        className={`block text-sm transition-colors ${
-                          category === cat.slug
-                            ? 'text-primary'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        {cat.name}
-                      </Link>
+                      <div key={cat.id}>
+                        <Link
+                          to={`/collections/${cat.slug}`}
+                          className={`block text-sm font-medium transition-colors ${
+                            category === cat.slug
+                              ? 'text-primary'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {cat.name}
+                        </Link>
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <div className="ml-4 mt-2 space-y-2">
+                            {cat.subcategories.map((subcat: Subcategory) => (
+                              <Link
+                                key={subcat.id}
+                                to={`/collections/${subcat.slug}`}
+                                className={`block text-xs transition-colors ${
+                                  category === subcat.slug
+                                    ? 'text-primary'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                {subcat.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Price Range */}
-                <div>
+                {/* <div>
                   <h4 className="font-medium mb-4">Price Range</h4>
                   <Slider
                     value={priceRange}
@@ -403,19 +404,19 @@ export default function Collections() {
                     <span>{formatPrice(priceRange[0])}</span>
                     <span>{formatPrice(priceRange[1])}</span>
                   </div>
-                </div>
+                </div> */}
               </div>
             </aside>
 
             {/* Products */}
             <div className="flex-1">
-              {loading ? (
+              {loading && allProducts.length === 0 ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {[...Array(20)].map((_, i) => (
                     <ProductCardSkeleton key={i} />
                   ))}
                 </div>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-muted-foreground">No products found</p>
                 </div>
@@ -428,10 +429,17 @@ export default function Collections() {
                         : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                     }`}
                   >
-                    {products.map((product, index) => (
+                    {filteredProducts.map((product, index) => (
                       <ProductCard key={product.id} product={product} index={index} />
                     ))}
                   </div>
+                  
+                  {/* Loading more indicator */}
+                  {loadingMore && (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  )}
                 </>
               )}
             </div>

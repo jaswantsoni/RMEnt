@@ -85,11 +85,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 Featured
               </span>
             )}
-            {!product.inStock && (
+            {/* {!product.inStock && (
               <span className="px-3 py-1 bg-destructive text-destructive-foreground text-xs font-medium">
                 Sold Out
               </span>
-            )}
+            )} */}
           </div>
 
           {/* Quick Actions */}
@@ -123,9 +123,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         {/* Product Info */}
         <div className="p-4">
-          <Link to={`/collections/${product.category?.slug || 'general'}`}>
+          <Link to={`/collections/${product.subcategory?.slug || product.category?.slug || 'general'}`}>
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-              {product.category?.name || 'General'}
+              {product.subcategory?.name || product.category?.name}
             </p>
           </Link>
           <Link to={`/product/${product.item_id}`}>

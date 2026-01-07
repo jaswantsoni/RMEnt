@@ -28,6 +28,7 @@ export interface Product {
   currency: string;
   images: ProductImage[];
   category: Category;
+  subcategory?: Subcategory;
   categoryId: string;
   variants: ProductVariant[];
   tags: string[];
@@ -81,7 +82,16 @@ export interface Category {
   image: string;
   parentId?: string;
   children?: Category[];
+  subcategories?: Subcategory[];
   productCount: number;
+}
+
+export interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
 }
 
 // Cart Types

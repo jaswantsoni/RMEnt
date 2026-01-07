@@ -27,6 +27,10 @@ export default function ProductDetail() {
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const loadProduct = async () => {
       if (!slug) return;
       
@@ -47,13 +51,26 @@ export default function ProductDetail() {
               compareAtPrice: apiProduct.sales_rate !== apiProduct.rate ? apiProduct.sales_rate * 100 : undefined,
               currency: 'USD',
               images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
-              category: { id: '1', name: apiProduct.category || 'Uncategorized', slug: 'uncategorized', description: '', image: '', productCount: 0 },
+              category: {
+                id: apiProduct.productCategory?.id || apiProduct.category_id || '1',
+                name: apiProduct.productCategory?.name || apiProduct.category || 'Uncategorized',
+                slug: apiProduct.productCategory?.slug || (apiProduct.productCategory?.name || apiProduct.category || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
+                description: apiProduct.productCategory?.description || '',
+                image: apiProduct.productCategory?.image_url || '',
+                productCount: 0
+              },
+              subcategory: apiProduct.productSubcategory ? {
+                id: apiProduct.productSubcategory.id,
+                name: apiProduct.productSubcategory.name,
+                slug: apiProduct.productSubcategory.slug,
+                description: apiProduct.productSubcategory.description
+              } : undefined,
               categoryId: '1',
               variants: [],
               tags: apiProduct.zoho_data?.tags || [],
-              specifications: [],
-              inStock: apiProduct.available_stock > 0,
-              stockQuantity: apiProduct.available_stock,
+              specifications: apiProduct.specifications ? Object.entries(apiProduct.specifications).map(([name, value]) => ({ name, value: String(value) })) : [],
+              inStock: apiProduct.stock_on_hand > 0,
+              stockQuantity: apiProduct.stock_on_hand,
               rating: 5,
               reviewCount: 0,
               featured: false,
@@ -80,6 +97,88 @@ export default function ProductDetail() {
       setSelectedVariant(product.variants[0]);
     }
     console.log('Selected variant set to:', product);
+  }, [product]);
+
+  // Load related products based on category and name matches
+  useEffect(() => {
+    const loadRelatedProducts = async () => {
+      if (!product?.category?.slug) return;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products?limit=20`);
+        if (response.ok) {
+          const result = await response.json();
+          const products = result.data || [];
+          
+          // Filter by category and name similarity, exclude current product
+          const related = products
+            .filter((p: any) => p.item_id !== product.id)
+            .filter((p: any) => {
+              const sameCategory = p.category_name === product.category?.name;
+              const nameWords = product.name.toLowerCase().split(' ');
+              const productNameWords = p.name.toLowerCase().split(' ');
+              const hasCommonWords = nameWords.some(word => productNameWords.includes(word));
+              return sameCategory || hasCommonWords;
+            })
+            .slice(0, 4);
+            
+          setRelatedProducts(related.map((apiProduct: any) => ({
+            id: apiProduct.item_id,
+            name: apiProduct.name,
+            slug: apiProduct.item_id,
+            price: apiProduct.rate * 100,
+            item_id: apiProduct.item_id,
+            images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
+            category: {
+              id: apiProduct.category_id || '1',
+              name: apiProduct.category_name || 'Uncategorized',
+              slug: (apiProduct.category_name || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
+              description: '', image: '', productCount: 0
+            },
+            inStock: apiProduct.available_stock > 0,
+            rating: 5,
+            reviewCount: 0
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to load related products:', error);
+      }
+    };
+    
+    loadRelatedProducts();
+  }, [product]);
+
+  // Load related products based on category
+  useEffect(() => {
+    const loadRelatedProducts = async () => {
+      if (!product?.category?.slug) return;
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products?category=${product.category.slug}&limit=4`);
+        if (response.ok) {
+          const result = await response.json();
+          const products = result.data || [];
+          // Filter out current product and limit to 4
+          const related = products.filter((p: any) => p.item_id !== product.id).slice(0, 4);
+          setRelatedProducts(related.map((apiProduct: any) => ({
+            id: apiProduct.item_id,
+            name: apiProduct.name,
+            slug: apiProduct.item_id,
+            item_id: apiProduct.item_id,
+            price: apiProduct.rate * 100,
+            images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
+            category: product.category,
+            inStock: apiProduct.available_stock > 0,
+            rating: 5,
+            reviewCount: 0
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to load related products:', error);
+      }
+    };
+    
+    loadRelatedProducts();
   }, [product]);
 
   const formatPrice = (price: number) => {
@@ -122,8 +221,8 @@ export default function ProductDetail() {
             <ChevronRight className="h-4 w-4" />
             <Link to="/collections" className="hover:text-primary transition-colors">Collections</Link>
             <ChevronRight className="h-4 w-4" />
-            <Link to={`/collections/${product.category?.slug}`} className="hover:text-primary transition-colors">
-              {product.category?.name}
+            <Link to={`/collections/${product.subcategory?.slug || product.category?.slug}`} className="hover:text-primary transition-colors">
+              {product.subcategory?.name || product.category?.name}
             </Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-foreground">{product.name}</span>
@@ -192,10 +291,10 @@ export default function ProductDetail() {
             >
               <div>
                 <Link
-                  to={`/collections/${product.category?.slug}`}
+                  to={`/collections/${product.subcategory?.slug || product.category?.slug}`}
                   className="text-sm text-primary uppercase tracking-wider hover:underline"
                 >
-                  {product.category?.name}
+                  {product.subcategory?.name || product.category?.name}
                 </Link>
                 <h1 className="text-3xl md:text-4xl font-display font-semibold mt-2">
                   {product.name}
@@ -363,13 +462,13 @@ export default function ProductDetail() {
               </div>
             </TabsContent>
             <TabsContent value="specifications" className="py-8">
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="gap-4 w-[50%] md:w-[40%] lg:w-[20%]">
                 {product.specifications?.map((spec) => (
                   <div
                     key={spec.name}
-                    className="flex justify-between py-3 border-b border-border"
+                    className="grid grid-flow-row grid-cols-2 justify-start gap-5"
                   >
-                    <span className="text-muted-foreground">{spec.name}</span>
+                    <span className="text-muted-foreground font-extrabold">{spec.name}</span>
                     <span className="font-medium">{spec.value}</span>
                   </div>
                 )) || <p className="text-muted-foreground">No specifications available.</p>}

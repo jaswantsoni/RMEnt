@@ -6,14 +6,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import NavBar from './NavBar';
 import { MegaNavbar } from '../MegaNavbar';
 import { sampleNavCategories } from "@/data/sampleNavData";
 import { toast } from "sonner";
