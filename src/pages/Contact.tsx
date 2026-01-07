@@ -45,7 +45,7 @@ export default function Contact() {
       <CartDrawer />
 
       {/* Hero */}
-      <section className="pt-32 pb-16 bg-card/30 border-b border-border">
+      <section className="pt-[20vh] pb-16 bg-card/30 border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

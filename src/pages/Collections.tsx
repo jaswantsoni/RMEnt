@@ -38,6 +38,7 @@ export default function Collections() {
   const { products: allProducts, setProducts: setAllProducts } = useProductStore();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -94,21 +95,40 @@ export default function Collections() {
         setHasMore(false);
       }
       
-      if (fetchedProducts.length === 0) {
-        return;
-      }
-      
       const newProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
       setAllProducts(newProducts);
       
-      // Load categories from localStorage if available
-      const storedCategories = localStorage.getItem('azzaro_categories');
-      if (storedCategories) {
-        try {
-          const parsedCategories = JSON.parse(storedCategories);
-          setCategories(parsedCategories);
-        } catch (e) {
-          console.error('Error parsing stored categories:', e);
+      // Load categories from localStorage if available, or fetch from API
+      if (categories.length === 0) {
+        const storedCategories = localStorage.getItem('azzaro_categories');
+        if (storedCategories) {
+          try {
+            const parsedCategories = JSON.parse(storedCategories);
+            setCategories(parsedCategories);
+          } catch (e) {
+            console.error('Error parsing stored categories:', e);
+          }
+        } else {
+          // Fetch categories from API if not in localStorage
+          try {
+            const { CategoryApiService } = await import('@/lib/categoryApi');
+            const fetchedCategories = await CategoryApiService.fetchCategories();
+            // Transform ApiCategory to Category format
+            const transformedCategories = fetchedCategories.map(cat => ({
+              ...cat,
+              image: cat.image_url || '',
+              productCount: 0,
+              subcategories: cat.subcategories.map(sub => ({
+                ...sub,
+                description: sub.description || sub.name || '',
+                image: sub.image_url || ''
+              }))
+            }));
+            setCategories(transformedCategories);
+            localStorage.setItem('azzaro_categories', JSON.stringify(transformedCategories));
+          } catch (error) {
+            console.error('Failed to load categories:', error);
+          }
         }
       }
       
@@ -137,12 +157,51 @@ export default function Collections() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadingMore, hasMore]);
 
+  // Load categories on component mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      const storedCategories = localStorage.getItem('azzaro_categories');
+      if (storedCategories) {
+        try {
+          const parsedCategories = JSON.parse(storedCategories);
+          setCategories(parsedCategories);
+        } catch (e) {
+          console.error('Error parsing stored categories:', e);
+        }
+      } else {
+        try {
+          const { CategoryApiService } = await import('@/lib/categoryApi');
+          const fetchedCategories = await CategoryApiService.fetchCategories();
+          // Transform ApiCategory to Category format
+          const transformedCategories = fetchedCategories.map(cat => ({
+            ...cat,
+            image: cat.image_url || '',
+            productCount: 0,
+            subcategories: cat.subcategories.map(sub => ({
+              ...sub,
+              description: sub.description || sub.name || '',
+              image: sub.image_url || ''
+            }))
+          }));
+          setCategories(transformedCategories);
+          localStorage.setItem('azzaro_categories', JSON.stringify(transformedCategories));
+        } catch (error) {
+          console.error('Failed to load categories:', error);
+        }
+      }
+    };
+    loadCategories();
+  }, []);
+
   // Load initial products and reload when filters change
   useEffect(() => {
     setPage(1);
     setHasMore(true);
-    loadProducts(1, true);
-  }, [category, priceRange]);
+    // Only load products if categories are loaded
+    if (categories.length > 0 || !category) {
+      loadProducts(1, true);
+    }
+  }, [category, priceRange, categories]);
 
   useEffect(() => {
     if (page > 1) {
@@ -356,34 +415,40 @@ export default function Collections() {
                       All Products
                     </Link>
                     {categories.map((cat) => (
-                      <div key={cat.id}>
-                        <Link
-                          to={`/collections/${cat.slug}`}
-                          className={`block text-sm font-medium transition-colors ${
-                            category === cat.slug
-                              ? 'text-primary'
-                              : 'text-muted-foreground hover:text-foreground'
-                          }`}
+                      <div key={cat.id} className="relative">
+                        <div
+                          onMouseEnter={() => setExpandedCategory(cat.id)}
+                          onMouseLeave={() => setExpandedCategory(null)}
+                          onClick={() => setExpandedCategory(expandedCategory === cat.id ? null : cat.id)}
                         >
-                          {cat.name}
-                        </Link>
-                        {cat.subcategories && cat.subcategories.length > 0 && (
-                          <div className="ml-4 mt-2 space-y-2">
-                            {cat.subcategories.map((subcat: Subcategory) => (
-                              <Link
-                                key={subcat.id}
-                                to={`/collections/${subcat.slug}`}
-                                className={`block text-xs transition-colors ${
-                                  category === subcat.slug
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                              >
-                                {subcat.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
+                          <Link
+                            to={`/collections/${cat.slug}`}
+                            className={`block text-sm font-medium transition-colors ${
+                              category === cat.slug
+                                ? 'text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {cat.name}
+                          </Link>
+                          {(expandedCategory === cat.id || category === cat.slug) && cat.subcategories && cat.subcategories.length > 0 && (
+                            <div className="ml-4 mt-2 space-y-2">
+                              {cat.subcategories.map((subcat: Subcategory) => (
+                                <Link
+                                  key={subcat.id}
+                                  to={`/collections/${subcat.slug}`}
+                                  className={`block text-xs transition-colors ${
+                                    category === subcat.slug
+                                      ? 'text-primary'
+                                      : 'text-muted-foreground hover:text-foreground'
+                                  }`}
+                                >
+                                  {subcat.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

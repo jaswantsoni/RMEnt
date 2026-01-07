@@ -12,6 +12,7 @@ export interface NavCategory {
   name: string;
   href: string;
   subcategories?: NavSubcategory[];
+  image?: string;
   featured?: {
     title: string;
     image: string;
@@ -45,6 +46,7 @@ export function MegaNavbar({
   cartItemCount = 0,
 }: MegaNavbarProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [hoveredSubcategory, setHoveredSubcategory] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -77,7 +79,7 @@ export function MegaNavbar({
   }, []);
 
   const activeCategoryData = categories.find((c) => c.name === activeCategory);
-
+  console.log('Rendering MegaNavbar with categories:', activeCategoryData);
   return (
     <>
       <nav
@@ -206,11 +208,13 @@ export function MegaNavbar({
                       key={sub.name}
                       href={sub.href}
                       className="group flex items-center gap-3 py-2 text-muted-foreground hover:text-primary transition-colors"
+                      onMouseEnter={() => setHoveredSubcategory(sub.name)}
+                      onMouseLeave={() => setHoveredSubcategory(null)}
                     >
-                      {sub.image && (
+                      {(sub.image) && (
                         <div className="w-12 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
                           <img
-                            src={sub.image}
+                            src={sub.image || activeCategoryData?.image}
                             alt={sub.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -239,32 +243,39 @@ export function MegaNavbar({
 
               {/* Featured Image */}
               <div className="col-span-4">
-                {activeCategoryData?.featured ? (
-                  <a
-                    href={activeCategoryData.featured.href}
-                    className="block group"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
-                      <img
-                        src={activeCategoryData.featured.image}
-                        alt={activeCategoryData.featured.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-foreground font-medium text-lg">
-                          {activeCategoryData.featured.title}
-                        </p>
+                {(() => {
+                  const hoveredSub = hoveredSubcategory ? activeCategoryData?.subcategories?.find(s => s.name === hoveredSubcategory) : null;
+                  const displayImage = hoveredSub?.image || activeCategoryData?.image;
+                  const displayTitle = hoveredSub?.name || activeCategoryData?.name;
+                  const displayHref = hoveredSub?.href || activeCategoryData?.href;
+                  
+                  return displayImage ? (
+                    <a
+                      href={displayHref}
+                      className="block group"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
+                        <img
+                          src={displayImage}
+                          alt={displayTitle}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <p className="text-foreground font-medium text-lg">
+                            {displayTitle}
+                          </p>
+                        </div>
                       </div>
+                    </a>
+                  ) : (
+                    <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center">
+                      <span className="text-muted-foreground text-sm">
+                        {displayTitle || 'Featured Content'}
+                      </span>
                     </div>
-                  </a>
-                ) : (
-                  <div className="aspect-[4/3] bg-muted rounded-lg flex items-center justify-center">
-                    <span className="text-muted-foreground text-sm">
-                      Featured Content
-                    </span>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
           </div>

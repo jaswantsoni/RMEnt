@@ -8,19 +8,8 @@ import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MegaNavbar } from '../MegaNavbar';
-import { sampleNavCategories } from "@/data/sampleNavData";
+import { CategoryApiService, type ApiCategory } from '@/lib/categoryApi';
 import { toast } from "sonner";
-
-const categories = [
-  { name: 'Bath Fittings', slug: 'bath-fittings' },
-  { name: 'Hardware', slug: 'hardware' },
-  { name: 'Lighting', slug: 'lighting' },
-  { name: 'Fans', slug: 'fans' },
-  { name: 'Home Decor', slug: 'home-decor' },
-  { name: 'Furniture', slug: 'furniture' },
-  { name: 'Carpet & Rugs', slug: 'carpet-rugs' },
-  { name: 'Perfume', slug: 'perfume' },
-];
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -31,6 +20,7 @@ const navigation = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { cart, openCart } = useCartStore();
@@ -43,6 +33,27 @@ export function Header() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const fetchedCategories = await CategoryApiService.fetchCategories();
+      // Transform API categories to NavCategory format
+      const transformedCategories = fetchedCategories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        href: `/collections/${cat.slug}`,
+        image: cat.image_url,
+        subcategories: cat.subcategories.map(sub => ({
+          id: sub.id,
+          name: sub.name,
+          href: `/collections/${sub.slug}`,
+          image: sub.image_url
+        }))
+      }));
+      setCategories(transformedCategories);
+    };
+    loadCategories();
   }, []);
 
   useEffect(() => {
@@ -199,7 +210,7 @@ export function Header() {
         </div>
         {/* <div className="container mx-auto px-4 lg:px-8"> */}
         <MegaNavbar
-        categories={sampleNavCategories}
+        categories={categories}
         showSearch={false}
         showUserIcon={false}
         showCartIcon={false}
