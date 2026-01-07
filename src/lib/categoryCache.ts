@@ -5,12 +5,12 @@ const CACHE_EXPIRY_KEY = 'azzaro_categories_cache_expiry';
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 export interface CachedCategory {
-  id: number;
+  id: string;
   name: string;
   href: string;
   image: string;
   subcategories: {
-    id: number;
+    id: string;
     name: string;
     href: string;
     image: string;

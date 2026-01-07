@@ -37,8 +37,21 @@ export function Header() {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const categories = await CategoryCache.getCategories();
-      setCategories(categories);
+      const { CategoryApiService } = await import('@/lib/categoryApi');
+      const fetchedCategories = await CategoryApiService.fetchCategories();
+      const transformedCategories = fetchedCategories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        href: `/collections/${cat.slug}`,
+        image: cat.image_url,
+        subcategories: cat.subcategories.map(sub => ({
+          id: sub.id,
+          name: sub.name,
+          href: `/collections/${sub.slug}`,
+          image: sub.image_url
+        }))
+      }));
+      setCategories(transformedCategories);
     };
     loadCategories();
   }, []);

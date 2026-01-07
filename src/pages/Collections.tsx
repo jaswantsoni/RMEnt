@@ -180,34 +180,23 @@ export default function Collections() {
   // Load categories on component mount
   useEffect(() => {
     const loadCategories = async () => {
-      const storedCategories = localStorage.getItem('azzaro_categories');
-      if (storedCategories) {
-        try {
-          const parsedCategories = JSON.parse(storedCategories);
-          setCategories(parsedCategories);
-        } catch (e) {
-          console.error('Error parsing stored categories:', e);
-        }
-      } else {
-        try {
-          const { CategoryApiService } = await import('@/lib/categoryApi');
-          const fetchedCategories = await CategoryApiService.fetchCategories();
-          // Transform ApiCategory to Category format
-          const transformedCategories = fetchedCategories.map(cat => ({
-            ...cat,
-            image: cat.image_url || '',
-            productCount: 0,
-            subcategories: cat.subcategories.map(sub => ({
-              ...sub,
-              description: sub.description || sub.name || '',
-              image: sub.image_url || ''
-            }))
-          }));
-          setCategories(transformedCategories);
-          localStorage.setItem('azzaro_categories', JSON.stringify(transformedCategories));
-        } catch (error) {
-          console.error('Failed to load categories:', error);
-        }
+      try {
+        const { CategoryApiService } = await import('@/lib/categoryApi');
+        const fetchedCategories = await CategoryApiService.fetchCategories();
+        // Transform ApiCategory to Category format
+        const transformedCategories = fetchedCategories.map(cat => ({
+          ...cat,
+          image: cat.image_url || '',
+          productCount: 0,
+          subcategories: cat.subcategories.map(sub => ({
+            ...sub,
+            description: sub.description || sub.name || '',
+            image: sub.image_url || ''
+          }))
+        }));
+        setCategories(transformedCategories);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
       }
     };
     loadCategories();
