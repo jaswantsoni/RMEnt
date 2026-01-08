@@ -308,7 +308,7 @@ export default function Collections() {
       <section className="py-12">
         <div className="container mx-auto px-4 lg:px-8">
           {/* Toolbar */}
-          <div className="sticky top-40 bg-background z-10 pb-4 mb-4 border-b border-border">
+          <div className="sticky top-32 bg-background z-10 pb-4 mb-4 border-b border-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {/* <p className="text-muted-foreground">
               Showing {filteredProducts.length} products

@@ -24,11 +24,28 @@ export default function ProductDetail() {
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [activeTab, setActiveTab] = useState('description');
+  const [showHeader, setShowHeader] = useState(false);
+  const [lastMouseY, setLastMouseY] = useState(0);
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.clientY < lastMouseY && e.clientY < 100) {
+        setShowHeader(true);
+      } else if (e.clientY > 100) {
+        setShowHeader(false);
+      }
+      setLastMouseY(e.clientY);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [lastMouseY]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -192,7 +209,6 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-24 flex items-center justify-center">
           <div className="text-center">
             <p className="text-muted-foreground">Product not found</p>
@@ -210,10 +226,15 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <div className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out",
+        showHeader ? "translate-y-0" : "-translate-y-full pointer-events-none"
+      )}>
+        <Header />
+      </div>
       <CartDrawer />
 
-      <main className="pt-24">
+      <main className="pt-8">
         {/* Breadcrumb */}
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -338,6 +359,33 @@ export default function ProductDetail() {
                 )}
               </div>
 
+              {/* Key Specifications */}
+              {product.specifications && product.specifications.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-foreground mb-2">Specifications</h4>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    {product.specifications.slice(0, 3).map((spec) => (
+                      <div key={spec.name} className="flex gap-2">
+                        <span className="font-medium">{spec.name}:</span>
+                        <span>{spec.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      const tabsSection = document.querySelector('[data-tabs-root]');
+                      if (tabsSection) {
+                        setActiveTab('specifications');
+                        tabsSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="text-xs text-primary hover:underline mt-1"
+                  >
+                    More
+                  </button>
+                </div>
+              )}
+
               <p className="text-muted-foreground">{product.shortDescription}</p>
 
               {/* Variants */}
@@ -416,10 +464,10 @@ export default function ProductDetail() {
                   <Truck className="h-6 w-6 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-muted-foreground">Free Shipping</p>
                 </div>
-                <div className="text-center">
+                {/* <div className="text-center">
                   <Shield className="h-6 w-6 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-muted-foreground">2 Year Warranty</p>
-                </div>
+                </div> */}
                 <div className="text-center">
                   <RefreshCw className="h-6 w-6 mx-auto mb-2 text-primary" />
                   <p className="text-sm text-muted-foreground">Easy Returns</p>
@@ -431,7 +479,7 @@ export default function ProductDetail() {
 
         {/* Tabs Section */}
         <section className="container mx-auto px-4 lg:px-8 py-12">
-          <Tabs defaultValue="description" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" data-tabs-root>
             <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent h-auto p-0">
               <TabsTrigger
                 value="description"
@@ -441,6 +489,7 @@ export default function ProductDetail() {
               </TabsTrigger>
               <TabsTrigger
                 value="specifications"
+                data-value="specifications"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-4"
               >
                 Specifications
@@ -462,7 +511,7 @@ export default function ProductDetail() {
               </div>
             </TabsContent>
             <TabsContent value="specifications" className="py-8">
-              <div className="gap-4 w-[50%] md:w-[40%] lg:w-[20%]">
+              <div className="gap-4 max-w-[60%]">
                 {product.specifications?.map((spec) => (
                   <div
                     key={spec.name}
