@@ -220,6 +220,12 @@ export default function Collections() {
   useEffect(() => {
     if (loadingRef.current) return;
     
+    // Only proceed if categories are loaded (or no category filter needed)
+    if (category && categories.length === 0) {
+      console.log('Waiting for categories to load before filtering...');
+      return;
+    }
+    
     // Clear products immediately when category changes
     setAllProducts([]);
     setFilteredProducts([]);
