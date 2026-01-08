@@ -255,7 +255,7 @@ export default function ProductDetail() {
                 <img
                   src={product.images?.[selectedImage]?.url || '/placeholder.jpg'}
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-300 ease-out"
+                  className="w-full h-full object-contain bg-white transition-transform duration-300 ease-out"
                   style={{
                     transform: isZooming ? 'scale(2)' : 'scale(1)',
                     transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
@@ -275,7 +275,7 @@ export default function ProductDetail() {
                     <img
                       src={image.url}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain bg-white"
                     />
                   </button>
                 )) || []}
