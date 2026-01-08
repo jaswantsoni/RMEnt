@@ -103,14 +103,14 @@ export default function Index() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="lg"
                 className="px-8 h-14 text-base border-foreground/20 hover:bg-foreground/5"
                 asChild
               >
                 <Link to="/about">Our Story</Link>
-              </Button>
+              </Button> */}
             </div>
           </motion.div>
         </div>

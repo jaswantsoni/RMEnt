@@ -127,7 +127,7 @@ export function Header() {
 
             {/* Actions */}
             <div className="flex items-center space-x-4">
-              <Link
+              {/* <Link
                 to="/about"
                 className={cn(
                   'text-lg font-medium tracking-wide transition-colors duration-300',
@@ -137,7 +137,7 @@ export function Header() {
                 )}
                 >
                 About
-              </Link>
+              </Link> */}
               <Link
                 to="/contact"
                 className={cn(
@@ -297,7 +297,7 @@ export function Header() {
                     </div>
                   </div>
 
-                  <Link
+                  {/* <Link
                     to="/about"
                     className={cn(
                       'block py-2 text-lg font-medium transition-colors',
@@ -307,7 +307,7 @@ export function Header() {
                     )}
                   >
                     About
-                  </Link>
+                  </Link> */}
                   <Link
                     to="/contact"
                     className={cn(
