@@ -14,20 +14,20 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 // Products will be loaded from Google Drive
 
-const categories: Category[] = [
-  { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
-  { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
-  { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space with elegance', image: '', productCount: 0 },
-  { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort meets style', image: '', productCount: 0 },
-  { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
-  { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
-  { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
-  { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
-];
+// const categories: Category[] = [
+//   { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
+//   { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
+//   { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space with elegance', image: '', productCount: 0 },
+//   { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort meets style', image: '', productCount: 0 },
+//   { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
+//   { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
+//   { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
+//   { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
+// ];
 
 const features = [
   { icon: Truck, title: 'Free Shipping', description: 'On orders above $5,000' },
-  { icon: Shield, title: '2 Year Warranty', description: 'On all products' },
+  // { icon: Shield, title: '2 Year Warranty', description: 'On all products' },
   { icon: RefreshCw, title: 'Easy Returns', description: '30-day return policy' },
   { icon: Sparkles, title: 'Premium Quality', description: 'Handpicked products' },
 ];
@@ -35,6 +35,7 @@ const features = [
 export default function Index() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { setProducts: setStoreProducts } = useProductStore();
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     // Load products from Shopify backend
@@ -54,13 +55,39 @@ export default function Index() {
     loadProducts();
   }, [setStoreProducts]);
 
+   useEffect(() => {
+    const loadCategories = async () => {
+      const { CategoryApiService } = await import('@/lib/categoryApi');
+      const fetchedCategories = await CategoryApiService.fetchCategories();
+      const transformedCategories = fetchedCategories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description || '',
+        image: cat.image_url || '',
+        productCount: 0,
+        href: `/collections/${cat.slug}`,
+        subcategories: cat.subcategories.map(sub => ({
+          id: sub.id,
+          name: sub.name,
+          slug: sub.slug,
+          description: sub.description || '',
+          image: sub.image_url || '',
+          href: `/collections/${sub.slug}`
+        }))
+      }));
+      setCategories(transformedCategories);
+    };
+    loadCategories();
+  }, []);
+
   return (
     <div className="min-h-screen pt-18 min-w-[100vw] bg-background">
       <Header />
       <CartDrawer />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background */}
         {/* <ScrollingBackground images={[
           '/img/ChatGPT Image Dec 23, 2025, 04_46_12 AM.png'
@@ -132,7 +159,7 @@ export default function Index() {
       <section className="border-y border-border ">
         
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border">
+          <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-border">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -189,6 +216,13 @@ export default function Index() {
                   to={`/collections/${category.slug}`}
                   className="group block relative aspect-[3/4] overflow-hidden rounded-sm bg-card border border-border"
                 >
+                  {category.image && (
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
                     <h3 className="text-lg md:text-xl font-display font-semibold text-foreground mb-1">

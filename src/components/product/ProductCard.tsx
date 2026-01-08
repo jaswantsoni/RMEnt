@@ -65,7 +65,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <img
               src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
               alt={product.images?.[0]?.alt || product.name}
-              className="w-full h-full object-cover transition-transform duration-500 ease-out"
+              className="w-full h-full object-contain transition-transform duration-500 ease-out bg-white"
               style={{
                 transform: isZooming ? 'scale(1.5)' : 'scale(1)',
                 transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
