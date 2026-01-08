@@ -51,11 +51,13 @@ export default function Collections() {
   const loadingRef = useRef(false);
   const lastCallRef = useRef(0);
 
-  const currentCategory = categories.find((c) => c.slug === category);
-  console.log("products in store:", allProducts);
-  console.log("filtered products:", filteredProducts);
+  const currentCategory = categories.find((c) => c.slug === category) || 
+    categories.find(cat => cat.subcategories?.some(sub => sub.slug === category))?.subcategories?.find(sub => sub.slug === category);
+  console.log("products in store:", allProducts.length);
+  console.log("filtered products:", filteredProducts.length);
   console.log("loading:", loading);
-  console.log("category:", category);
+  console.log("category param:", category);
+  console.log("current category found:", currentCategory);
   const loadProducts = useCallback(async (pageNum: number, reset: boolean = false) => {
     // Prevent duplicate calls within 1 second
     const now = Date.now();
@@ -75,17 +77,22 @@ export default function Collections() {
       let categoryId: string | undefined;
       let subcategoryId: string | undefined;
       
+      console.log('Current category param:', category);
+      console.log('Available categories:', categories.map(c => ({ id: c.id, slug: c.slug, name: c.name })));
+      
       if (category) {
         // Check if it's a main category
         const mainCategory = categories.find(cat => cat.slug === category);
         if (mainCategory) {
           categoryId = mainCategory.id;
+          console.log('Found main category:', { id: categoryId, name: mainCategory.name });
         } else {
           // Check if it's a subcategory
           for (const cat of categories) {
             const subcat = cat.subcategories?.find(sub => sub.slug === category);
             if (subcat) {
               subcategoryId = subcat.id;
+              console.log('Found subcategory:', { id: subcategoryId, name: subcat.name, parentCategory: cat.name });
               break;
             }
           }
@@ -99,11 +106,18 @@ export default function Collections() {
         ...(priceRange[1] < 100000 && { max_price: priceRange[1] })
       };
       
+      console.log('Applied filters:', filters);
+      
       const fetchedProducts = await ShopifyApiService.fetchProducts(20, pageNum, sortBy, sortOrder, filters);
       
       // Set hasMore based on fetched products count
       if (fetchedProducts.length < 20) {
         setHasMore(false);
+      }
+      
+      // Clear existing products when resetting to avoid mixing
+      if (reset) {
+        // Products already cleared in useEffect, just proceed
       }
       
       const newProducts = reset ? fetchedProducts : [...allProducts, ...fetchedProducts];
@@ -206,13 +220,15 @@ export default function Collections() {
   useEffect(() => {
     if (loadingRef.current) return;
     
+    // Clear products immediately when category changes
+    setAllProducts([]);
+    setFilteredProducts([]);
+    
     setPage(1);
     setHasMore(true);
-    // Only load products if categories are loaded
-    if (categories.length > 0 || !category) {
-      loadProducts(1, true);
-    }
-  }, [category, priceRange]);
+    // Load products when category changes, regardless of categories state
+    loadProducts(1, true);
+  }, [category, priceRange, categories]);
 
   useEffect(() => {
     if (page > 1 && !loadingRef.current) {
