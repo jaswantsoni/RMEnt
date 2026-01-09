@@ -48,6 +48,7 @@ export default function Collections() {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [preloaded, setPreloaded] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const loadingRef = useRef(false);
   const lastCallRef = useRef(0);
 
@@ -262,7 +263,7 @@ export default function Collections() {
       <CartDrawer />
 
       {/* Hero */}
-      <section className="pt-16 pb-16 bg-card/30 border-b border-border">
+      <section className="pt-12 lg:pt-16 pb-16 bg-card/30 border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -315,7 +316,7 @@ export default function Collections() {
             </p> */}
             <div className="flex items-center gap-4">
               {/* Filter Button - Mobile */}
-              <Sheet>
+              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="lg:hidden">
                     <Filter className="h-4 w-4 mr-2" />
@@ -335,6 +336,7 @@ export default function Collections() {
                           <div key={cat.id}>
                             <Link
                               to={`/collections/${cat.slug}`}
+                              onClick={() => setIsFilterOpen(false)}
                               className={`block text-sm font-medium transition-colors ${
                                 category === cat.slug
                                   ? 'text-primary'
@@ -349,6 +351,7 @@ export default function Collections() {
                                   <Link
                                     key={subcat.id}
                                     to={`/collections/${subcat.slug}`}
+                                    onClick={() => setIsFilterOpen(false)}
                                     className={`block text-xs transition-colors ${
                                       category === subcat.slug
                                         ? 'text-primary'
@@ -431,7 +434,7 @@ export default function Collections() {
 
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-16 self-start max-h-[calc(100vh-12rem)] overflow-y-auto">
+            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-12 lg:top-16 self-start max-h-[calc(100vh-12rem)] overflow-y-auto">
               <div className="space-y-8 pr-4">
                 {/* Categories */}
                 <div>

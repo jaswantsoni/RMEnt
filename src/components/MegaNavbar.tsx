@@ -92,8 +92,8 @@ export function MegaNavbar({
         {/* Top Bar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Mobile menu button */}
-            <button
+            {/* Mobile menu button - Hidden since Header handles mobile menu */}
+            {/* <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 -ml-2 text-foreground hover:text-primary transition-colors"
               aria-label="Toggle menu"
@@ -103,7 +103,7 @@ export function MegaNavbar({
               ) : (
                 <Menu className="h-6 w-6" />
               )}
-            </button>
+            </button> */}
 
             {/* Logo */}
             {/* <div className="flex-shrink-0">
@@ -282,8 +282,8 @@ export function MegaNavbar({
         </div>
       </nav>
 
-      {/* Mobile Menu */}
-      <div
+      {/* Mobile Menu - Hidden since Header handles mobile navigation */}
+      {/* <div
         className={cn(
           "fixed inset-0 z-40 lg:hidden transition-all duration-300",
           isMobileMenuOpen
@@ -291,13 +291,11 @@ export function MegaNavbar({
             : "opacity-0 pointer-events-none"
         )}
       >
-        {/* Overlay */}
         <div
           className="absolute inset-0 bg-background/80 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
 
-        {/* Menu Panel */}
         <div
           className={cn(
             "absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-background shadow-xl transition-transform duration-300",
@@ -324,7 +322,7 @@ export function MegaNavbar({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

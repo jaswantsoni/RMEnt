@@ -244,7 +244,7 @@ export default function ProductDetail() {
       <Header />
       <CartDrawer />
 
-      <main className="pt-24">
+      <main className="pt-12 lg:pt-24">
         {/* Breadcrumb */}
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">

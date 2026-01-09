@@ -71,7 +71,7 @@ export function Header() {
         )}
       >
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-12 lg:h-20">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
@@ -141,7 +141,7 @@ export function Header() {
               <Link
                 to="/contact"
                 className={cn(
-                  'text-lg font-medium tracking-wide transition-colors duration-300',
+                  'hidden md:block text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/contact'
                   ? 'text-primary'
                   : 'text-foreground/70 hover:text-primary'
