@@ -36,7 +36,7 @@ const socialLinks = [
 
 export function Footer() {
   return (
-    <footer className="bg-card border-t border-border">
+    <footer className="bg-card border-t border-border min-h-[400px]">
       {/* Newsletter Section */}
       <div className="border-b border-border">
         <div className="container mx-auto px-4 lg:px-8 py-16">

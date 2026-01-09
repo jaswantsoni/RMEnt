@@ -72,7 +72,8 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             <img
               src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
               alt={product.images?.[0]?.alt || product.name}
-              loading="lazy"
+              loading={index < 4 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
               decoding="async"
               width="400"
               height="400"

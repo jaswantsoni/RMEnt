@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 // API Response Types
 export interface ApiResponse<T> {
   success: boolean;

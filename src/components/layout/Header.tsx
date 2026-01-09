@@ -172,7 +172,7 @@ export function Header() {
                 >
                 {isAuthenticated ? (
                   (() => {
-                    const imageUrl = user?.avatar || user?.picture || user?.avatar_url || user?.image;
+                    const imageUrl = user?.avatar || user?.avatar_url;
                     return imageUrl ? (
                       <img 
                         src={imageUrl} 
