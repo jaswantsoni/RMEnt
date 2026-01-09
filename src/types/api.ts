@@ -118,6 +118,7 @@ export interface CartItem {
   total: number;
 }
 
+
 export interface AddToCartRequest {
   productId: string;
   variantId?: string;

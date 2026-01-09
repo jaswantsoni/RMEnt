@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
+import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
 
 type CheckoutStep = 'shipping' | 'payment' | 'review';
@@ -32,7 +33,8 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('card');
 
   const { cart, clearCart } = useCartStore();
-  const { isAuthenticated } = useUserStore();
+  const { isAuthenticated, user } = useUserStore();
+  const { addresses, fetchAddresses } = useAddressStore();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -65,7 +67,7 @@ export default function Checkout() {
     }
   };
 
-  // Redirect to auth if not authenticated
+  // Load user data and addresses
   useEffect(() => {
     if (!isAuthenticated) {
       toast({
@@ -73,11 +75,47 @@ export default function Checkout() {
         description: 'Please login to proceed with checkout.',
       });
       navigate('/auth?redirect=/checkout');
+      return;
     }
-  }, [isAuthenticated, navigate, toast]);
+
+    // Fetch addresses
+    fetchAddresses();
+
+    // Pre-fill form with user data
+    if (user) {
+      setShippingData(prev => ({
+        ...prev,
+        firstName: user.firstName || user.first_name || prev.firstName,
+        lastName: user.lastName || user.last_name || prev.lastName,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [isAuthenticated, navigate, toast, fetchAddresses, user]);
+
+  // Pre-fill with default address when addresses load
+  useEffect(() => {
+    if (Array.isArray(addresses) && addresses.length > 0) {
+      const defaultAddress = addresses.find(addr => addr.isDefault && addr.type === 'shipping');
+      if (defaultAddress && !shippingData.address1) {
+        setShippingData(prev => ({
+          ...prev,
+          firstName: defaultAddress.firstName || prev.firstName,
+          lastName: defaultAddress.lastName || prev.lastName,
+          phone: defaultAddress.phone || prev.phone,
+          address1: defaultAddress.address1,
+          address2: defaultAddress.address2 || '',
+          city: defaultAddress.city,
+          state: defaultAddress.state,
+          postalCode: defaultAddress.zipCode,
+          country: defaultAddress.country,
+        }));
+      }
+    }
+  }, [addresses]);
 
   const subtotal = cart?.subtotal || 0;
-  const shipping = subtotal > 5000 ? 0 : 499;
+  const shipping = subtotal > 1000 ? 0 : 30;
   const tax = Math.round(subtotal * 0.18);
   const total = subtotal + shipping + tax;
 

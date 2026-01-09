@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Minus, Plus, Heart, Share2, Truck, Shield, RefreshCw, Star, ChevronRight } from 'lucide-react';
+import { Minus, Plus, Heart, Share2, Truck, Shield, RefreshCw, Star, ChevronRight, Loader2 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { ProductCard } from '@/components/product/ProductCard';
 import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/api';
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils';
 export default function ProductDetail() {
   const { slug } = useParams();
   const { addItem } = useCartStore();
+  const { toggleItem, isInWishlist, fetchWishlist } = useWishlistStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
@@ -26,11 +28,14 @@ export default function ProductDetail() {
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState('description');
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    fetchWishlist();
+  }, [fetchWishlist]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -455,13 +460,49 @@ export default function ProductDetail() {
                 <Button
                   size="lg"
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => addItem(product, selectedVariant, quantity)}
+                  onClick={async () => {
+                    if (isAddingToCart) return;
+                    setIsAddingToCart(true);
+                    try {
+                      await addItem(product, selectedVariant, quantity);
+                    } catch (error) {
+                      console.error('Error adding to cart:', error);
+                    } finally {
+                      setIsAddingToCart(false);
+                    }
+                  }}
                   disabled={!selectedVariant?.inventory && !product.inStock}
                 >
-                  Add to Cart
+                  {isAddingToCart ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    'Add to Cart'
+                  )}
                 </Button>
-                <Button variant="outline" size="icon" className="h-12 w-12">
-                  <Heart className="h-5 w-5" />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-12 w-12"
+                  onClick={async () => {
+                    if (isAddingToWishlist) return;
+                    setIsAddingToWishlist(true);
+                    try {
+                      await toggleItem(product);
+                    } catch (error) {
+                      console.error('Error adding to wishlist:', error);
+                    } finally {
+                      setIsAddingToWishlist(false);
+                    }
+                  }}
+                >
+                  {isAddingToWishlist ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Heart className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-current text-primary' : ''}`} />
+                  )}
                 </Button>
                 <Button variant="outline" size="icon" className="h-12 w-12">
                   <Share2 className="h-5 w-5" />
@@ -472,7 +513,7 @@ export default function ProductDetail() {
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                 <div className="text-center">
                   <Truck className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-sm text-muted-foreground">Free Shipping Over $5000</p>
+                  <p className="text-sm text-muted-foreground">Free Shipping Over $1000</p>
                 </div>
                 {/* <div className="text-center">
                   <Shield className="h-6 w-6 mx-auto mb-2 text-primary" />

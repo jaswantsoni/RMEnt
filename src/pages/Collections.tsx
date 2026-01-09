@@ -177,8 +177,8 @@ export default function Collections() {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         if (loading || loadingMore || loadingRef.current) return;
-        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-          if (!loadingMore && hasMore) {
+        if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500) {
+          if (!loadingMore && hasMore && page > 0) {
             setPage(prev => prev + 1);
           }
         }
@@ -190,7 +190,7 @@ export default function Collections() {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, [loading, loadingMore, hasMore]);
+  }, [loading, loadingMore, hasMore, page]);
 
   // Load categories on component mount
   useEffect(() => {
@@ -233,9 +233,8 @@ export default function Collections() {
     
     setPage(1);
     setHasMore(true);
-    // Load products when category changes, regardless of categories state
     loadProducts(1, true);
-  }, [category, priceRange, categories]);
+  }, [category, priceRange, categories.length]);
 
   useEffect(() => {
     if (page > 1 && !loadingRef.current) {
@@ -530,8 +529,8 @@ export default function Collections() {
                         : 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                     }`}
                   >
-                    {filteredProducts.map((product, index) => (
-                      <ProductCard key={product.id} product={product} index={index} />
+                    {filteredProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} index={0} />
                     ))}
                   </div>
                   

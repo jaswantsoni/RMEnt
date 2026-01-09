@@ -37,21 +37,15 @@ export function Header() {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const { CategoryApiService } = await import('@/lib/categoryApi');
-      const fetchedCategories = await CategoryApiService.fetchCategories();
-      const transformedCategories = fetchedCategories.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        href: `/collections/${cat.slug}`,
-        image: cat.image_url,
-        subcategories: cat.subcategories.map(sub => ({
-          id: sub.id,
-          name: sub.name,
-          href: `/collections/${sub.slug}`,
-          image: sub.image_url
-        }))
-      }));
-      setCategories(transformedCategories);
+      // Try to load from cache first
+      const cachedCategories = CategoryCache.get();
+      if (cachedCategories) {
+        setCategories(cachedCategories);
+      }
+      
+      // Fetch fresh data in background
+      const freshCategories = await CategoryCache.getCategories();
+      setCategories(freshCategories);
     };
     loadCategories();
   }, []);
@@ -76,7 +70,7 @@ export function Header() {
             <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
                 <span className="text-gradient-gold flex">
-                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' />
+                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' loading="eager" decoding="async" />
                   AZZARO HOME
                   </span>
                 {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
@@ -183,6 +177,10 @@ export function Header() {
                       <img 
                         src={imageUrl} 
                         alt="Profile" 
+                        width="24"
+                        height="24"
+                        loading="lazy"
+                        decoding="async"
                         className="w-6 h-6 rounded-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -205,9 +203,9 @@ export function Header() {
                 onClick={openCart}
                 >
                 <ShoppingBag className="h-5 w-5" />
-                {cart && cart.itemCount > 0 && (
+                {cart && (cart.itemCount || cart.items?.length) > 0 && (
                   <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                    {cart.itemCount}
+                    {cart.itemCount || cart.items?.length || 0}
                   </span>
                 )}
               </Button>

@@ -1,5 +1,5 @@
-// Convert Google Drive image URLs to publicly accessible format
-export function convertDriveImageUrl(driveUrl: string): string {
+// Convert Google Drive image URLs to publicly accessible format with size optimization
+export function convertDriveImageUrl(driveUrl: string, size: number = 800): string {
   if (!driveUrl || !driveUrl.includes('drive.google.com')) {
     return driveUrl || '/placeholder.svg';
   }
@@ -14,8 +14,8 @@ export function convertDriveImageUrl(driveUrl: string): string {
   }
   
   if (fileId) {
-    // Use thumbnail URL that works for public images
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+    // Use thumbnail URL with optimized size
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
   }
   
   return '/placeholder.svg';

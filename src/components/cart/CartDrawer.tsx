@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minus, Plus, ShoppingBag, Trash2, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
+  import { useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
@@ -8,9 +9,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 export function CartDrawer() {
-  const { cart, isOpen, closeCart, updateItemQuantity, removeItem } = useCartStore();
+  const { cart, isOpen, closeCart, updateItemQuantity, removeItem, fetchCart } = useCartStore();
   const { isAuthenticated } = useUserStore();
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated, fetchCart]);
+
+  console.log('Cart data in CartDrawer:', cart);
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -45,9 +53,9 @@ export function CartDrawer() {
               <div className="flex items-center gap-3">
                 <ShoppingBag className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-display font-semibold">Shopping Bag</h2>
-                {cart && cart.itemCount > 0 && (
+                {cart?.items?.length > 0 && (
                   <span className="text-sm text-muted-foreground">
-                    ({cart.itemCount} items)
+                    ({cart.itemCount || cart.items.length} items)
                   </span>
                 )}
               </div>
@@ -57,7 +65,7 @@ export function CartDrawer() {
             </div>
 
             {/* Cart Items */}
-            {!cart || cart.items.length === 0 ? (
+            {!cart?.items?.length ? (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-6">
                   <ShoppingBag className="h-10 w-10 text-muted-foreground" />
@@ -74,7 +82,7 @@ export function CartDrawer() {
               <>
                 <ScrollArea className="flex-1 p-6">
                   <div className="space-y-6">
-                    {cart.items.map((item) => (
+                    {cart?.items?.map((item) => (
                       <motion.div
                         key={item.id}
                         layout
@@ -89,8 +97,12 @@ export function CartDrawer() {
                           className="flex-shrink-0"
                         >
                           <img
-                            src={item.product.images[0]?.url || '/placeholder.svg'}
-                            alt={item.product.name}
+                            src={item.product?.images?.[0]?.url || '/placeholder.svg'}
+                            alt={item.product?.name || 'Product'}
+                            width="96"
+                            height="96"
+                            loading="lazy"
+                            decoding="async"
                             className="w-24 h-24 object-cover rounded-sm"
                           />
                         </Link>
@@ -100,7 +112,7 @@ export function CartDrawer() {
                             onClick={closeCart}
                           >
                             <h4 className="font-medium text-foreground hover:text-primary transition-colors line-clamp-1">
-                              {item.product.name}
+                              {item.product?.name || 'Product'}
                             </h4>
                           </Link>
                           {item.variant && (
@@ -108,7 +120,7 @@ export function CartDrawer() {
                               {item.variant.name}
                             </p>
                           )}
-                          <p className="font-semibold mt-2">{formatPrice(item.price)}</p>
+                          <p className="font-semibold mt-2">{formatPrice(item.price || 0)}</p>
                           <div className="flex items-center justify-between mt-3">
                             <div className="flex items-center border border-border rounded-sm">
                               <Button
@@ -155,29 +167,29 @@ export function CartDrawer() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>{formatPrice(cart.subtotal)}</span>
+                      <span>{formatPrice(cart?.subtotal || 0)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Shipping</span>
                       <span>
-                        {cart.total >= 5000 ? 'Free' : formatPrice(cart.shipping)}
+                        {cart?.shipping === 0 ? 'Free' : formatPrice(cart?.shipping || 30)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Sale Tax (9.75%)</span>
-                      <span>{formatPrice(cart.tax)}</span>
+                      <span>{formatPrice(cart?.tax || 0)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between font-semibold">
                       <span>Total</span>
                       <span className="text-gradient-gold text-lg">
-                        {formatPrice(cart.total)}
+                        {formatPrice(cart?.total || 0)}
                       </span>
                     </div>
                   </div>
-                  {cart.subtotal < 5000 && (
+                  {(cart?.subtotal || 0) < 50000 && (
                     <p className="text-xs text-center text-muted-foreground">
-                      Add {formatPrice(5000 - cart.subtotal)} more for free shipping
+                      Add {formatPrice(50000 - (cart?.subtotal || 0))} more for free shipping
                     </p>
                   )}
                   {isAuthenticated ? (

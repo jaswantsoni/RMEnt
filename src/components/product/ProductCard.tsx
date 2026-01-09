@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { Heart, ShoppingBag, Star, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Product } from '@/types/api';
 import { useCartStore } from '@/store/cartStore';
@@ -13,10 +13,17 @@ interface ProductCardProps {
   index?: number;
 }
 
-export function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const { addItem } = useCartStore();
-  const { toggleItem, isInWishlist } = useWishlistStore();
+export const ProductCard = memo(function ProductCard({ product, index = 0 }: ProductCardProps) {
+  const { addItem, cart } = useCartStore();
+  const { toggleItem, isInWishlist, fetchWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
+  const inCart = cart?.items?.some(item => item.productId === product.id || item.product?.id === product.id);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+  
+  useEffect(() => {
+    fetchWishlist();
+  }, [fetchWishlist]);
   
   console.log('Rendering ProductCard for:', product);
   // Zoom state
@@ -65,6 +72,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             <img
               src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
               alt={product.images?.[0]?.alt || product.name}
+              loading="lazy"
+              decoding="async"
+              width="400"
+              height="400"
               className="w-full h-full object-contain transition-transform duration-500 ease-out bg-white"
               style={{
                 transform: isZooming ? 'scale(1.5)' : 'scale(1)',
@@ -85,38 +96,71 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 Featured
               </span>
             )}
-            {/* {!product.inStock && (
-              <span className="px-3 py-1 bg-destructive text-destructive-foreground text-xs font-medium">
-                Sold Out
-              </span>
-            )} */}
           </div>
 
           {/* Quick Actions */}
-          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
+          <div className="absolute top-4 right-4 flex flex-col gap-2">
             <Button
               variant="secondary"
               size="icon"
-              onClick={(e) => { e.preventDefault(); toggleItem(product); }}
-              className={cn("h-10 w-10 backdrop-blur-sm", inWishlist ? "bg-primary text-primary-foreground" : "bg-background/90 hover:bg-primary hover:text-primary-foreground")}
+              onClick={async (e) => { 
+                e.preventDefault();
+                if (isAddingToWishlist) return;
+                setIsAddingToWishlist(true);
+                try {
+                  await toggleItem(product);
+                } finally {
+                  setIsAddingToWishlist(false);
+                }
+              }}
+              className={cn(
+                "h-10 w-10 backdrop-blur-sm transition-all",
+                inWishlist 
+                  ? "bg-transparent border-0 opacity-100" 
+                  : "bg-background/90 hover:bg-primary hover:text-primary-foreground opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+              )}
             >
-              <Heart className={cn("h-4 w-4", inWishlist && "fill-current")} />
+              {isAddingToWishlist ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Heart className={cn("h-5 w-5", inWishlist && "fill-current text-gradient-gold")} style={inWishlist ? { color: '#D4AF37' } : {}} />
+              )}
             </Button>
+            {inCart && (
+              <div className="h-10 w-10 flex items-center justify-center">
+                <ShoppingBag className="h-5 w-5" style={{ color: '#D4AF37' }} />
+              </div>
+            )}
           </div>
 
           {/* Add to Cart Overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-10">
             <Button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                addItem(product);
+                if (isAddingToCart) return;
+                setIsAddingToCart(true);
+                try {
+                  await addItem(product);
+                } finally {
+                  setIsAddingToCart(false);
+                }
               }}
               disabled={!product.inStock}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              Add to Cart
+              {isAddingToCart ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  Add to Cart
+                </>
+              )}
             </Button>
           </div>
         </Link>
@@ -169,4 +213,4 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       </div>
     </motion.div>
   );
-}
+});

@@ -1,21 +1,40 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { customerApi } from '@/services/customerApi';
 import type { Cart, CartItem, Product, ProductVariant } from '@/types/api';
 
+interface BackendCartItem {
+  id: string;
+  customer_id: string;
+  product_id: string;
+  quantity: number;
+  variant_id: string | null;
+  created_at: string;
+  updated_at: string;
+  product: any;
+  variant: any;
+}
+
+interface BackendCart {
+  cartItems: BackendCartItem[];
+  count: number;
+}
+
 interface CartStore {
-  cart: Cart | null;
+  cart: Cart;
   isOpen: boolean;
   isLoading: boolean;
   
-  setCart: (cart: Cart | null) => void;
+  setCart: (cart: Cart) => void;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
   
-  // Local cart operations (for when API is unavailable)
-  addItem: (product: Product, variant?: ProductVariant, quantity?: number) => void;
-  updateItemQuantity: (itemId: string, quantity: number) => void;
-  removeItem: (itemId: string) => void;
+  // API cart operations
+  fetchCart: () => Promise<void>;
+  addItem: (product: Product, variant?: ProductVariant, quantity?: number) => Promise<void>;
+  updateItemQuantity: (itemId: string, quantity: number) => Promise<void>;
+  removeItem: (itemId: string) => Promise<void>;
   clearCart: () => void;
 }
 
@@ -30,105 +49,225 @@ const createEmptyCart = (): Cart => ({
   itemCount: 0,
 });
 
-const recalculateCart = (items: CartItem[]): Partial<Cart> => {
-  const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-  const tax = subtotal * 0.0975; // 18% GST
-  const shipping = subtotal > 5000 ? 0 : 499;
-  const total = subtotal + tax + shipping;
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+const transformBackendCart = (backendCart: BackendCart): Cart => {
+  const items: CartItem[] = backendCart.cartItems.map(item => ({
+    id: item.id,
+    productId: item.product_id,
+    product: {
+      id: item.product.id,
+      item_id: item.product.item_id || item.product.id,
+      name: item.product.name,
+      slug: item.product.item_id || item.product.id,
+      description: item.product.description || '',
+      shortDescription: item.product.description || '',
+      price: item.product.rate,
+      compareAtPrice: undefined,
+      currency: 'USD',
+      images: item.product.image_url ? [{ id: '1', url: item.product.image_url, alt: item.product.name, position: 0 }] : [],
+      image_url: item.product.image_url,
+      category: { id: '1', name: item.product.category || 'Uncategorized', slug: 'uncategorized', description: '', image: '', productCount: 0 },
+      categoryId: '1',
+      variants: [],
+      tags: [],
+      specifications: [],
+      inStock: item.product.available_stock > 0,
+      stockQuantity: item.product.available_stock || 0,
+      rating: 5,
+      reviewCount: 0,
+      featured: false,
+      createdAt: item.product.created_at || new Date().toISOString(),
+      updatedAt: item.product.updated_at || new Date().toISOString(),
+    } as Product,
+    variantId: item.variant_id,
+    variant: item.variant,
+    quantity: item.quantity,
+    price: item.product.rate,
+    total: item.product.rate * item.quantity,
+  }));
   
-  return { subtotal, tax, shipping, total, itemCount };
+  const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const tax = subtotal * 0.0975;
+  const shipping = subtotal >= 1000 ? 0 : 30;
+  const total = subtotal + tax + shipping;
+  
+  console.log('Cart calculation:', { subtotal, tax, shipping, total, threshold: 1000, isFreeShipping: subtotal >= 1000 });
+  
+  return {
+    id: 'backend-cart',
+    items,
+    subtotal,
+    tax,
+    shipping,
+    total,
+    currency: 'USD',
+    itemCount: backendCart.count,
+  };
 };
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
-      cart: null,
+      cart: createEmptyCart(),
       isOpen: false,
       isLoading: false,
 
-      setCart: (cart) => set({ cart }),
+      setCart: (cart) => set({ cart: cart || createEmptyCart() }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 
-      addItem: (product, variant, quantity = 1) => {
-        const { cart } = get();
-        const currentCart = cart || createEmptyCart();
-        
+      fetchCart: async () => {
+        set({ isLoading: true });
+        try {
+          const response = await customerApi.getCart();
+          console.log('Raw cart response:', response);
+          if (response.success && response.data) {
+            const transformedCart = transformBackendCart(response.data);
+            console.log('Transformed cart:', transformedCart);
+            set({ cart: transformedCart });
+          } else {
+            set({ cart: createEmptyCart() });
+          }
+        } catch (error) {
+          console.error('Failed to fetch cart:', error);
+          set({ cart: createEmptyCart() });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      addItem: async (product, variant, quantity = 1) => {
+        // Optimistic update - update UI immediately
+        const currentCart = get().cart;
         const existingItemIndex = currentCart.items.findIndex(
-          (item) => 
-            item.productId === product.id && 
-            item.variantId === (variant?.id || undefined)
+          item => item.productId === product.id && item.variantId === variant?.id
         );
 
-        let newItems: CartItem[];
-        
-        if (existingItemIndex > -1) {
-          newItems = currentCart.items.map((item, index) => {
-            if (index === existingItemIndex) {
-              const newQuantity = item.quantity + quantity;
-              return {
-                ...item,
-                quantity: newQuantity,
-                total: (variant?.price || product.price) * newQuantity,
-              };
-            }
-            return item;
-          });
+        let updatedItems: CartItem[];
+        if (existingItemIndex >= 0) {
+          // Update existing item quantity
+          updatedItems = [...currentCart.items];
+          updatedItems[existingItemIndex] = {
+            ...updatedItems[existingItemIndex],
+            quantity: updatedItems[existingItemIndex].quantity + quantity,
+            total: updatedItems[existingItemIndex].price * (updatedItems[existingItemIndex].quantity + quantity),
+          };
         } else {
-          const price = variant?.price || product.price;
+          // Add new item
           const newItem: CartItem = {
-            id: `${product.id}-${variant?.id || 'default'}-${Date.now()}`,
+            id: `temp-${Date.now()}`,
             productId: product.id,
             product,
             variantId: variant?.id,
             variant,
             quantity,
-            price,
-            total: price * quantity,
+            price: product.price,
+            total: product.price * quantity,
           };
-          newItems = [...currentCart.items, newItem];
+          updatedItems = [...currentCart.items, newItem];
         }
 
-        const calculated = recalculateCart(newItems);
+        const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
+        const tax = subtotal * 0.0975;
+        const shipping = subtotal >= 1000 ? 0 : 30;
+        const total = subtotal + tax + shipping;
+
         set({
-          cart: { ...currentCart, items: newItems, ...calculated },
+          cart: {
+            ...currentCart,
+            items: updatedItems,
+            subtotal,
+            tax,
+            shipping,
+            total,
+            itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          },
           isOpen: true,
         });
+
+        // Sync with backend in background
+        try {
+          await customerApi.addToCart(product.id, quantity, variant?.id);
+          // Fetch fresh data from backend to ensure sync
+          await get().fetchCart();
+        } catch (error) {
+          console.error('Failed to sync cart with backend:', error);
+          // Revert on error
+          set({ cart: currentCart });
+        }
       },
 
-      updateItemQuantity: (itemId, quantity) => {
-        const { cart } = get();
-        if (!cart) return;
-
+      updateItemQuantity: async (itemId, quantity) => {
         if (quantity <= 0) {
-          get().removeItem(itemId);
+          await get().removeItem(itemId);
           return;
         }
 
-        const newItems = cart.items.map((item) => {
-          if (item.id === itemId) {
-            return {
-              ...item,
-              quantity,
-              total: item.price * quantity,
-            };
-          }
-          return item;
+        // Optimistic update
+        const currentCart = get().cart;
+        const updatedItems = currentCart.items.map(item =>
+          item.id === itemId
+            ? { ...item, quantity, total: item.price * quantity }
+            : item
+        );
+
+        const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
+        const tax = subtotal * 0.0975;
+        const shipping = subtotal >= 1000 ? 0 : 30;
+        const total = subtotal + tax + shipping;
+
+        set({
+          cart: {
+            ...currentCart,
+            items: updatedItems,
+            subtotal,
+            tax,
+            shipping,
+            total,
+            itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          },
         });
 
-        const calculated = recalculateCart(newItems);
-        set({ cart: { ...cart, items: newItems, ...calculated } });
+        // Sync with backend
+        try {
+          await customerApi.updateCartItem(itemId, quantity);
+          await get().fetchCart();
+        } catch (error) {
+          console.error('Failed to update cart:', error);
+          set({ cart: currentCart });
+        }
       },
 
-      removeItem: (itemId) => {
-        const { cart } = get();
-        if (!cart) return;
+      removeItem: async (itemId) => {
+        // Optimistic update
+        const currentCart = get().cart;
+        const updatedItems = currentCart.items.filter(item => item.id !== itemId);
 
-        const newItems = cart.items.filter((item) => item.id !== itemId);
-        const calculated = recalculateCart(newItems);
-        set({ cart: { ...cart, items: newItems, ...calculated } });
+        const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
+        const tax = subtotal * 0.0975;
+        const shipping = subtotal >= 1000 ? 0 : 30;
+        const total = subtotal + tax + shipping;
+
+        set({
+          cart: {
+            ...currentCart,
+            items: updatedItems,
+            subtotal,
+            tax,
+            shipping,
+            total,
+            itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+          },
+        });
+
+        // Sync with backend
+        try {
+          await customerApi.removeFromCart(itemId);
+          await get().fetchCart();
+        } catch (error) {
+          console.error('Failed to remove from cart:', error);
+          set({ cart: currentCart });
+        }
       },
 
       clearCart: () => {

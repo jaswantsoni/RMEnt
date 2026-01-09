@@ -80,17 +80,17 @@ export default function Products() {
   // Infinite scroll with throttling
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
-        if (!loadingMore && !isScrollLoading && hasMore) {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500) {
+        if (!loadingMore && !isScrollLoading && hasMore && page > 0) {
           setPage(prev => prev + 1);
         }
       }
     };
 
-    const throttledScroll = throttle(handleScroll, 500); // Throttle to 500ms
+    const throttledScroll = throttle(handleScroll, 500);
     window.addEventListener('scroll', throttledScroll);
     return () => window.removeEventListener('scroll', throttledScroll);
-  }, [loadingMore, isScrollLoading, hasMore]);
+  }, [loadingMore, isScrollLoading, hasMore, page]);
 
   // Throttle function
   function throttle(func: Function, delay: number) {
@@ -113,6 +113,8 @@ export default function Products() {
   }
 
   useEffect(() => {
+    setPage(1);
+    setHasMore(true);
     loadProducts(1, true);
   }, [sortBy, sortOrder]);
 
@@ -120,7 +122,7 @@ export default function Products() {
     if (page > 1) {
       loadProducts(page);
     }
-  }, [page, loadProducts]);
+  }, [page]);
 
   // Set filtered products to products (no frontend filtering since backend handles sorting)
   useEffect(() => {
