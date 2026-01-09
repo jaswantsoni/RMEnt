@@ -45,7 +45,7 @@ export default function Contact() {
       <CartDrawer />
 
       {/* Hero */}
-      <section className="pt-[20vh] pb-16 bg-card/30 border-b border-border">
+      <section className="pt-24 pb-16 bg-card/30 border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export default function Contact() {
                 {contactInfo.map((info) => (
                   <div key={info.title} className="flex gap-4">
                     <div className="w-12 h-12 rounded-sm bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <info.icon className="h-5 w-5 text-primary" />
+                      <info.icon className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-medium mb-1">{info.title}</h3>

@@ -29,7 +29,7 @@ const footerLinks = {
 
 const socialLinks = [
   { name: 'Facebook', icon: Facebook, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: '#' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/azzarohom_ca/' },
   { name: 'Twitter', icon: Twitter, href: '#' },
   { name: 'Youtube', icon: Youtube, href: '#' },
 ];

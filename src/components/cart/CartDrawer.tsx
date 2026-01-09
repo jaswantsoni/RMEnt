@@ -160,11 +160,11 @@ export function CartDrawer() {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Shipping</span>
                       <span>
-                        {cart.shipping === 0 ? 'Free' : formatPrice(cart.shipping)}
+                        {cart.total >= 5000 ? 'Free' : formatPrice(cart.shipping)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tax (18% GST)</span>
+                      <span className="text-muted-foreground">Sale Tax (9.75%)</span>
                       <span>{formatPrice(cart.tax)}</span>
                     </div>
                     <Separator className="my-2" />

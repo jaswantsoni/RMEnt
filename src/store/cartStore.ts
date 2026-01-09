@@ -32,7 +32,7 @@ const createEmptyCart = (): Cart => ({
 
 const recalculateCart = (items: CartItem[]): Partial<Cart> => {
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-  const tax = subtotal * 0.18; // 18% GST
+  const tax = subtotal * 0.0975; // 18% GST
   const shipping = subtotal > 5000 ? 0 : 499;
   const total = subtotal + tax + shipping;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);

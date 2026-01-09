@@ -52,6 +52,7 @@ export interface ProductImage {
 }
 
 export interface ProductVariant {
+  name: ReactNode;
   id: string;
   title: string;
   sku: string;

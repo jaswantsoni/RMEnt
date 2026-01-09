@@ -262,7 +262,7 @@ export default function Collections() {
       <CartDrawer />
 
       {/* Hero */}
-      <section className="pt-32 pb-16 bg-card/30 border-b border-border">
+      <section className="pt-16 pb-16 bg-card/30 border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -308,7 +308,7 @@ export default function Collections() {
       <section className="py-12">
         <div className="container mx-auto px-4 lg:px-8">
           {/* Toolbar */}
-          <div className="sticky top-32 bg-background z-10 pb-4 mb-4 border-b border-border">
+          <div className="sticky top-0 bg-background z-10 pb-4 mb-4 border-b border-border">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {/* <p className="text-muted-foreground">
               Showing {filteredProducts.length} products
@@ -431,7 +431,7 @@ export default function Collections() {
 
           <div className="flex gap-8">
             {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-64 self-start max-h-[calc(100vh-12rem)] overflow-y-auto">
+            <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-16 self-start max-h-[calc(100vh-12rem)] overflow-y-auto">
               <div className="space-y-8 pr-4">
                 {/* Categories */}
                 <div>

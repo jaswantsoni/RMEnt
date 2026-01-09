@@ -64,19 +64,19 @@ export function Header() {
     <>
       <header
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+          'top-0 left-0 right-0 z-50 transition-all duration-500',
           isScrolled
             ? 'bg-background/90 backdrop-blur-md'
             : 'bg-background/100'
         )}
       >
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
-              <h1 className="text-lg md:text-xl font-display font-semibold tracking-wider">
+              <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
                 <span className="text-gradient-gold flex">
-                <img src="/logo-bg.png" width={24} height={20} alt="logo" className='mx-2' />
+                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' />
                   AZZARO HOME
                   </span>
                 {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}

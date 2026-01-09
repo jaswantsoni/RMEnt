@@ -21,12 +21,11 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState('description');
-  const [showHeader, setShowHeader] = useState(false);
-  const [lastMouseY, setLastMouseY] = useState(0);
   const mainImageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,23 +33,10 @@ export default function ProductDetail() {
   }, []);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (e.clientY < lastMouseY && e.clientY < 100) {
-        setShowHeader(true);
-      } else if (e.clientY > 100) {
-        setShowHeader(false);
-      }
-      setLastMouseY(e.clientY);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [lastMouseY]);
-
-  useEffect(() => {
     const loadProduct = async () => {
       if (!slug) return;
       
+      setIsLoading(true);
       try {
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${slug}`);
         if (response.ok) {
@@ -103,6 +89,8 @@ export default function ProductDetail() {
         }
       } catch (error) {
         console.error('Failed to load product:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -206,9 +194,36 @@ export default function ProductDetail() {
     }).format(price / 100);
   };
 
+  const formatSpecValue = (value: string) => {
+    const numValue = parseFloat(value);
+    return !isNaN(numValue) ? numValue.toFixed(2) : value;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-24 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4">
+              <img 
+                src="https://i.gifer.com/ZKZg.gif" 
+                alt="Loading..." 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <p className="text-muted-foreground">Loading product...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!product) {
     return (
       <div className="min-h-screen bg-background">
+        <Header />
         <div className="container mx-auto px-4 py-24 flex items-center justify-center">
           <div className="text-center">
             <p className="text-muted-foreground">Product not found</p>
@@ -226,15 +241,10 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-out",
-        showHeader ? "translate-y-0" : "-translate-y-full pointer-events-none"
-      )}>
-        <Header />
-      </div>
+      <Header />
       <CartDrawer />
 
-      <main className="pt-8">
+      <main className="pt-24">
         {/* Breadcrumb */}
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -367,7 +377,7 @@ export default function ProductDetail() {
                     {product.specifications.slice(0, 3).map((spec) => (
                       <div key={spec.name} className="flex gap-2">
                         <span className="font-medium">{spec.name}:</span>
-                        <span>{spec.value}</span>
+                        <span>{formatSpecValue(spec.value)}</span>
                       </div>
                     ))}
                   </div>
@@ -462,7 +472,7 @@ export default function ProductDetail() {
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                 <div className="text-center">
                   <Truck className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-sm text-muted-foreground">Free Shipping</p>
+                  <p className="text-sm text-muted-foreground">Free Shipping Over $5000</p>
                 </div>
                 {/* <div className="text-center">
                   <Shield className="h-6 w-6 mx-auto mb-2 text-primary" />
@@ -503,11 +513,15 @@ export default function ProductDetail() {
             </TabsList>
             <TabsContent value="description" className="py-8">
               <div className="prose prose-invert max-w-none">
-                {product.description?.split('\n\n').map((paragraph, i) => (
-                  <p key={i} className="text-muted-foreground mb-4">
-                    {paragraph}
-                  </p>
-                )) || <p className="text-muted-foreground">No description available.</p>}
+                {product.description && product.description.trim() ? (
+                  product.description.split('\n\n').map((paragraph, i) => (
+                    <p key={i} className="text-muted-foreground mb-4">
+                      {paragraph}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground">* This product contains no description</p>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="specifications" className="py-8">
@@ -518,7 +532,7 @@ export default function ProductDetail() {
                     className="grid grid-flow-row grid-cols-2 justify-start gap-5"
                   >
                     <span className="text-muted-foreground font-extrabold">{spec.name}</span>
-                    <span className="font-medium">{spec.value}</span>
+                    <span className="font-medium">{formatSpecValue(spec.value)}</span>
                   </div>
                 )) || <p className="text-muted-foreground">No specifications available.</p>}
               </div>

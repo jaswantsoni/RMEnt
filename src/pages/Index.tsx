@@ -225,10 +225,10 @@ export default function Index() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
-                    <h3 className="text-lg md:text-xl font-display font-semibold text-slate-900 mb-1">
+                    <h3 className="text-lg md:text-xl font-display font-semibold text-foreground mb-1">
                       {category.name}
                     </h3>
-                    <p className="text-sm text-slate-900/70 mb-2 hidden md:block">{category.description}</p>
+                    <p className="text-sm text-muted-foreground mb-2 hidden md:block">{category.description}</p>
                     <span className="inline-flex items-center text-primary text-sm font-medium group-hover:gap-2 gap-1 transition-all">
                       Shop Now
                       <ArrowRight className="h-3 w-3" />
