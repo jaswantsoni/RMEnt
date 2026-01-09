@@ -33,9 +33,17 @@ export const useUserStore = create<UserState>()(
       login: (user, token) => {
         localStorage.setItem('auth_token', token);
         set({ user, token, isAuthenticated: true });
+        // Initialize token refresh
+        import('@/services/tokenService').then(({ tokenService }) => {
+          tokenService.scheduleRefresh();
+        });
       },
       logout: () => {
         localStorage.removeItem('auth_token');
+        // Clear token refresh
+        import('@/services/tokenService').then(({ tokenService }) => {
+          tokenService.clearRefresh();
+        });
         set({ user: null, token: null, isAuthenticated: false });
       },
       setLoading: (isLoading) => set({ isLoading }),

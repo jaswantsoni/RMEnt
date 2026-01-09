@@ -83,7 +83,7 @@ export default function Auth() {
   const handleGoogleSignIn = () => {
     // Redirect to backend Google OAuth endpoint with redirect param
     const redirectParam = encodeURIComponent(redirectTo);
-    window.location.href = `https://backend.jaswantsoni.com/api/auth/google?redirect=${redirectParam}`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google?redirect=${redirectParam}`;
   };
 
   return (

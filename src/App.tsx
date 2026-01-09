@@ -3,12 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
 import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import Wishlist from "./pages/Wishlist";
 import Search from "./pages/Search";
 import Checkout from "./pages/Checkout";
@@ -35,11 +37,12 @@ const App = () => (
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
           <Route path="/search" element={<Search />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/account/:tab" element={<Account />} />
+          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="/account/:tab" element={<ProtectedRoute><Account /></ProtectedRoute>} />
           <Route path="/products" element={<Products />} />
           <Route path="/shopify" element={<ShopifyProducts />} />
           <Route path="/admin" element={<Admin />} />

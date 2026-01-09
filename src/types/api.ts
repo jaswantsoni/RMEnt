@@ -139,6 +139,9 @@ export interface User {
   addresses: Address[];
   defaultAddressId?: string;
   createdAt: string;
+  avatar_url?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export interface Address {

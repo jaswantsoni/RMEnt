@@ -177,9 +177,23 @@ export function Header() {
                 onClick={() => navigate(isAuthenticated ? '/account' : '/auth')}
                 >
                 {isAuthenticated ? (
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-                    {user?.firstName?.[0]}
-                  </div>
+                  (() => {
+                    const imageUrl = user?.avatar || user?.picture || user?.avatar_url || user?.image;
+                    return imageUrl ? (
+                      <img 
+                        src={imageUrl} 
+                        alt="Profile" 
+                        className="w-6 h-6 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-foreground">
+                        {user?.firstName?.[0] || user?.first_name?.[0] || user?.email?.[0] || 'U'}
+                      </div>
+                    );
+                  })()
                 ) : (
                   <User className="h-5 w-5" />
                 )}

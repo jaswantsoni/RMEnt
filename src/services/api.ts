@@ -19,7 +19,7 @@ import type {
   ContactRequest,
 } from '@/types/api';
 
-const API_BASE_URL = 'https://backend.jaswantsoni.com/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
 class ApiService {
   private token: string | null = null;
