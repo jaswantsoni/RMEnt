@@ -1,33 +1,57 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- Preconnect to CloudFront CDN -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Preconnect for faster loading -->
     <link rel="preconnect" href="https://d26hjs463edyav.cloudfront.net" crossorigin>
     <link rel="dns-prefetch" href="https://d26hjs463edyav.cloudfront.net">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Google tag (gtag.js) -->
+    <!-- Critical meta tags -->
+    <title>Azzaro Home - Premium Home Decor & Luxury Interiors</title>
+    <meta name="description" content="Discover premium home decor, luxury lighting, designer fans, and exquisite bath fittings at Azzaro Home. Transform your living space with curated elegance." />
+    <meta name="author" content="Azzaro Home" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://azzarohome.com" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Azzaro Home - Premium Home Decor & Luxury Interiors" />
+    <meta property="og:description" content="Discover premium home decor, luxury lighting, designer fans, and exquisite bath fittings. Transform your living space with curated elegance." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://staging.azzarohome.com/og-image.png" />
+    <meta property="og:url" content="https://azzarohome.com" />
+    <meta property="og:site_name" content="Azzaro Home" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Azzaro Home - Premium Home Decor" />
+    <meta name="twitter:description" content="Discover premium home decor and luxury interiors." />
+    <meta name="twitter:image" content="https://staging.azzarohome.com/og-image.png" />
+    
+    <!-- Performance: Preload critical assets -->
+    <link rel="preload" href="/logo-bg.png" as="image" type="image/png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#D4AF37" />
+    
+    <!-- Google Analytics - Deferred for performance -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7G8EBZDLZW"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-7G8EBZDLZW');
+      gtag('config', 'G-7G8EBZDLZW', { send_page_view: false });
+      // Defer page view until after LCP
+      window.addEventListener('load', () => {
+        setTimeout(() => gtag('event', 'page_view'), 100);
+      });
     </script>
-    
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Azzaro Home - Premium Home Decor</title>
-    <meta name="description" content="Azzaro Home Premium Decor" />
-    <meta name="author" content="Azzaro Home" />
-
-    <meta property="og:title" content="Azzaro Home" />
-    <meta property="og:description" content="Azzaro Home - Premium Decor" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://staging.azzarohome.com/og-image.png" />
-
-    <!-- <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" /> -->
   </head>
 
   <body>

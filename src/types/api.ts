@@ -19,10 +19,10 @@ export interface PaginatedResponse<T> {
 // Product Types
 export interface Product {
   id: string;
-  item_id: string;
+  item_id?: string;
   name: string;
   slug: string;
-  image_url: string;
+  image_url?: string;
   description: string;
   shortDescription: string;
   price: number;
@@ -42,7 +42,7 @@ export interface Product {
   featured: boolean;
   createdAt: string;
   updatedAt: string;
-  sku: string;
+  sku?: string;
   rate?: number;
 }
 
@@ -54,9 +54,9 @@ export interface ProductImage {
 }
 
 export interface ProductVariant {
-  name: ReactNode;
+  name?: ReactNode;
   id: string;
-  title: string;
+  title?: string;
   sku: string;
   price: number;
   compareAtPrice?: number;

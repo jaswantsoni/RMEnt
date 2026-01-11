@@ -25,7 +25,6 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
     fetchWishlist();
   }, [fetchWishlist]);
   
-  console.log('Rendering ProductCard for:', product);
   // Zoom state
   const [isZooming, setIsZooming] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });

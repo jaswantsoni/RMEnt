@@ -103,6 +103,7 @@ class ShopifyService {
       compareAtPrice: shopifyProduct.variants[0]?.compare_at_price 
         ? parseFloat(shopifyProduct.variants[0].compare_at_price) 
         : undefined,
+      currency: 'USD',
       images: shopifyProduct.images.map(img => ({
         id: img.id.toString(),
         url: img.src,
@@ -112,41 +113,30 @@ class ShopifyService {
       category: {
         id: '1',
         name: shopifyProduct.product_type || 'General',
-        slug: shopifyProduct.product_type?.toLowerCase().replace(/\s+/g, '-') || 'general'
+        slug: shopifyProduct.product_type?.toLowerCase().replace(/\s+/g, '-') || 'general',
+        description: '',
+        image: '',
+        productCount: 0
       },
-      brand: shopifyProduct.vendor,
+      categoryId: '1',
       sku: shopifyProduct.variants[0]?.sku || '',
-      stock: shopifyProduct.variants[0]?.inventory_quantity || 0,
-      isInStock: (shopifyProduct.variants[0]?.inventory_quantity || 0) > 0,
-      weight: shopifyProduct.variants[0]?.weight || 0,
-      dimensions: {
-        length: 0,
-        width: 0,
-        height: 0
-      },
       tags: shopifyProduct.tags.split(',').map(tag => tag.trim()),
       variants: shopifyProduct.variants.map(variant => ({
         id: variant.id.toString(),
+        title: variant.title,
         name: variant.title,
         price: parseFloat(variant.price),
         compareAtPrice: variant.compare_at_price ? parseFloat(variant.compare_at_price) : undefined,
-        sku: variant.sku,
-        stock: variant.inventory_quantity,
-        isInStock: variant.inventory_quantity > 0,
-        attributes: {
-          ...(variant.option1 && { option1: variant.option1 }),
-          ...(variant.option2 && { option2: variant.option2 }),
-          ...(variant.option3 && { option3: variant.option3 })
-        }
+        sku: variant.sku || '',
+        inventory: variant.inventory_quantity,
+        inStock: variant.inventory_quantity > 0
       })),
-      attributes: shopifyProduct.options.reduce((acc, option) => {
-        acc[option.name] = option.values;
-        return acc;
-      }, {} as Record<string, string[]>),
-      seoTitle: shopifyProduct.title,
-      seoDescription: shopifyProduct.body_html.replace(/<[^>]*>/g, '').substring(0, 160),
-      isActive: shopifyProduct.status === 'active',
-      isFeatured: false,
+      specifications: [],
+      inStock: (shopifyProduct.variants[0]?.inventory_quantity || 0) > 0,
+      stockQuantity: shopifyProduct.variants[0]?.inventory_quantity || 0,
+      rating: 4.5,
+      reviewCount: 0,
+      featured: false,
       createdAt: shopifyProduct.created_at,
       updatedAt: shopifyProduct.updated_at
     };
