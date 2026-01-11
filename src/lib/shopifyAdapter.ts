@@ -130,8 +130,9 @@ export class ShopifyProductAdapter {
       categoryId: category.id,
       variants: shopifyProduct.variants.map(variant => ({
         id: variant.id.toString(),
+        name: variant.title,
         title: variant.title,
-        price: parseFloat(variant.price) * 100, // Convert USD to cents
+        price: parseFloat(variant.price) * 100,
         sku: variant.sku || '',
         inventory: variant.inventory_quantity
       })),

@@ -83,6 +83,7 @@ export class ZohoProductAdapter {
       categoryId: category.id,
       variants: [{
         id: zohoItem.item_id,
+        name: 'Default',
         title: 'Default',
         price: parseFloat(zohoItem.rate || '0') * 100,
         sku: zohoItem.sku || '',
