@@ -79,6 +79,7 @@ export function MegaNavbar({
   }, []);
 
   const activeCategoryData = categories.find((c) => c.name === activeCategory);
+  console.log('MegaNavbar categories:', categories);
   console.log('Rendering MegaNavbar with categories:', activeCategoryData);
   return (
     <>
@@ -91,7 +92,7 @@ export function MegaNavbar({
       >
         {/* Top Bar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-12 lg:h-15">
+          <div className="flex items-center justify-between h-12 lg:h-16">
             {/* Mobile menu button - Hidden since Header handles mobile menu */}
             {/* <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -118,39 +119,43 @@ export function MegaNavbar({
             </div> */}
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1">
-              {categories.map((category) => (
-                <div
-                  key={category.name}
-                  onMouseEnter={() => handleMouseEnter(category.name)}
-                  onMouseLeave={handleMouseLeave}
-                  className="relative"
-                >
-                  <a
-                    href={category.href}
-                    className={cn(
-                      "flex items-center gap-1 px-4 py-2 text-sm font-medium tracking-wide uppercase transition-colors",
-                      activeCategory === category.name
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary"
-                    )}
+            <div className="flex items-center space-x-1 w-full justify-center">
+              {categories.length === 0 ? (
+                <span className="text-sm text-muted-foreground">Loading categories...</span>
+              ) : (
+                categories.map((category) => (
+                  <div
+                    key={category.name}
+                    onMouseEnter={() => handleMouseEnter(category.name)}
+                    onMouseLeave={handleMouseLeave}
+                    className="relative"
                   >
-                    {category.name}
-                    {category.subcategories && category.subcategories.length > 0 && (
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 transition-transform duration-200",
-                          activeCategory === category.name && "rotate-180"
-                        )}
-                      />
-                    )}
-                  </a>
-                </div>
-              ))}
+                    <a
+                      href={category.href}
+                      className={cn(
+                        "flex items-center gap-1 px-4 py-2 text-sm font-medium tracking-wide uppercase transition-colors",
+                        activeCategory === category.name
+                          ? "text-primary"
+                          : "text-foreground hover:text-primary"
+                      )}
+                    >
+                      {category.name}
+                      {category.subcategories && category.subcategories.length > 0 && (
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            activeCategory === category.name && "rotate-180"
+                          )}
+                        />
+                      )}
+                    </a>
+                  </div>
+                ))
+              )}
             </div>
 
-            {/* Right Icons */}
-            <div className="flex items-center space-x-4">
+            {/* Right Icons - Hidden since Header handles these */}
+            <div className="hidden items-center space-x-4">
               {showSearch && (
                 <button
                   onClick={onSearchClick}
