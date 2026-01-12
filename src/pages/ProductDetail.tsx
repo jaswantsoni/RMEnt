@@ -517,7 +517,7 @@ export default function ProductDetail() {
               {/* Features */}
               <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
                 <div className="text-center">
-                  <Truck className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <Truck className="h-6 w-6 mx-auto mb-2 text-slate-500" />
                   <p className="text-sm text-muted-foreground">Free Shipping Over $1000</p>
                 </div>
                 {/* <div className="text-center">
@@ -525,7 +525,7 @@ export default function ProductDetail() {
                   <p className="text-sm text-muted-foreground">2 Year Warranty</p>
                 </div> */}
                 <div className="text-center">
-                  <RefreshCw className="h-6 w-6 mx-auto mb-2 text-primary" />
+                  <RefreshCw className="h-6 w-6 mx-auto mb-2 text-slate-500" />
                   <p className="text-sm text-muted-foreground">Easy Returns</p>
                 </div>
               </div>
