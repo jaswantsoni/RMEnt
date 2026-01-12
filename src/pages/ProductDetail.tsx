@@ -76,7 +76,12 @@ export default function ProductDetail() {
               categoryId: '1',
               variants: [],
               tags: apiProduct.zoho_data?.tags || [],
-              specifications: apiProduct.specifications ? Object.entries(apiProduct.specifications).map(([name, value]) => ({ name, value: String(value) })) : [],
+              specifications: apiProduct.specifications ? [
+                { name: 'SKU', value: apiProduct.sku || apiProduct.item_id },
+                ...Object.entries(apiProduct.specifications)
+                  .filter(([name]) => name.toLowerCase() !== 'product name')
+                  .map(([name, value]) => ({ name, value: String(value) }))
+              ] : [{ name: 'SKU', value: apiProduct.sku || apiProduct.item_id }],
               inStock: apiProduct.stock_on_hand > 0,
               stockQuantity: apiProduct.stock_on_hand,
               rating: 5,
