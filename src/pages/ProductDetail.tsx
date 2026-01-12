@@ -55,8 +55,8 @@ export default function ProductDetail() {
               slug: apiProduct.item_id,
               description: apiProduct.description || apiProduct.enhanced_description || '',
               shortDescription: apiProduct.description || '',
-              price: apiProduct.rate * 100, // Convert to cents
-              compareAtPrice: apiProduct.sales_rate !== apiProduct.rate ? apiProduct.sales_rate * 100 : undefined,
+              price: apiProduct.rate,
+              compareAtPrice: apiProduct.sales_rate !== apiProduct.rate ? apiProduct.sales_rate : undefined,
               currency: 'USD',
               images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
               category: {
@@ -141,7 +141,7 @@ export default function ProductDetail() {
             id: apiProduct.item_id,
             name: apiProduct.name,
             slug: apiProduct.item_id,
-            price: apiProduct.rate * 100,
+            price: apiProduct.rate,
             item_id: apiProduct.item_id,
             images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
             category: {
@@ -180,7 +180,7 @@ export default function ProductDetail() {
             name: apiProduct.name,
             slug: apiProduct.item_id,
             item_id: apiProduct.item_id,
-            price: apiProduct.rate * 100,
+            price: apiProduct.rate,
             images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
             category: product.category,
             inStock: apiProduct.available_stock > 0,
@@ -201,7 +201,7 @@ export default function ProductDetail() {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(price / 100);
+    }).format(price);
   };
 
   const formatSpecValue = (value: string) => {

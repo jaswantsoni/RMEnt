@@ -47,7 +47,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format(price / 1); // Convert cents back to dollars
+    }).format(price);
   };
 
   return (
