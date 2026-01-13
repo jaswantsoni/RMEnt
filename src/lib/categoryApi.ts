@@ -18,17 +18,33 @@ export interface ApiCategory {
 export class CategoryApiService {
   static async fetchCategories(): Promise<ApiCategory[]> {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/categories`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
+      const response = await fetch(`${BACKEND_URL}/api/categories`, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
+        console.error(`API error: ${response.status} ${response.statusText}`);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('Categories fetched successfully:', data.data?.length || 0);
       return data.data || [];
       
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      if (error.name === 'AbortError') {
+        console.error('Category fetch timeout after 10s');
+      } else {
+        console.error('Failed to fetch categories:', error);
+      }
       return [];
     }
   }

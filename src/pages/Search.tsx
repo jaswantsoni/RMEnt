@@ -10,13 +10,14 @@ import { Button } from '@/components/ui/button';
 import type { Product } from '@/types/api';
 
 import { useProductStore } from '@/store/productStore';
+import { set } from 'date-fns';
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { products: storeProducts } = useProductStore();
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -24,7 +25,13 @@ export default function Search() {
       setQuery(q);
       performSearch(q);
     }
-  }, [searchParams, storeProducts]);
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchParams({ q: query });
+    setSearching(true);
+  };
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -34,30 +41,59 @@ export default function Search() {
 
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const filtered = storeProducts.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/products?page=1&limit=50&search=${encodeURIComponent(searchQuery)}`
       );
-      setResults(filtered);
+      
+      if (response.ok) {
+        const result = await response.json();
+        const products = result.data || [];
+        
+        // Transform API products to match Product interface
+        const transformedProducts = products.map((apiProduct: any) => ({
+          id: apiProduct.item_id,
+          name: apiProduct.name,
+          slug: apiProduct.item_id,
+          item_id: apiProduct.item_id,
+          price: apiProduct.rate,
+          images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
+          category: {
+            id: apiProduct.category_id || '1',
+            name: apiProduct.category_name || 'Uncategorized',
+            slug: (apiProduct.category_name || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
+            description: '', image: '', productCount: 0
+          },
+          subcategory: apiProduct.subcategory_name ? {
+            id: apiProduct.subcategory_id || '1',
+            name: apiProduct.subcategory_name,
+            slug: apiProduct.subcategory_name.toLowerCase().replace(/\s+/g, '-'),
+            description: ''
+          } : undefined,
+          description: apiProduct.description || '',
+          inStock: apiProduct.available_stock > 0,
+          rating: 5,
+          reviewCount: 0,
+          sku: apiProduct.sku
+        }));
+        
+        setResults(transformedProducts);
+      } else {
+        setResults([]);
+      }
     } catch (error) {
       console.error('Search error:', error);
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchParams({ q: query });
-  };
-
-  const clearSearch = () => {
+const clearSearch = () => {
+  console.log('Clear search called');
     setQuery('');
     setResults([]);
     setSearchParams({});
+    setSearching(false);
   };
 
   return (
@@ -77,8 +113,8 @@ export default function Search() {
             <form onSubmit={handleSearch} className="relative">
               <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/40" />
               <Input
-                type="search"
-                placeholder="Search for products, categories..."
+                type="text"
+                placeholder="Search by name, category, SKU, or brand..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full h-14 pl-12 pr-24 text-lg bg-card border-border/50 focus:border-primary rounded-xl"
@@ -89,7 +125,7 @@ export default function Search() {
                   onClick={clearSearch}
                   className="absolute right-20 top-1/2 -translate-y-1/2 p-1 text-foreground/40 hover:text-foreground/60"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5 pr-2" />
                 </button>
               )}
               <Button
@@ -106,7 +142,7 @@ export default function Search() {
             <div className="flex justify-center py-20">
               <div className="h-8 w-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
-          ) : query && results.length === 0 ? (
+          ) : searching && results.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -154,7 +190,7 @@ export default function Search() {
               className="text-center py-12"
             >
               <p className="text-foreground/60 text-lg">
-                Start typing to search our collection
+                Search our collection
               </p>
             </motion.div>
           )}

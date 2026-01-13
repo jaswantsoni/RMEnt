@@ -121,7 +121,11 @@ export function MegaNavbar({
             {/* Desktop Navigation */}
             <div className="flex items-center space-x-1 w-full justify-center">
               {categories.length === 0 ? (
-                <span className="text-sm text-muted-foreground">Loading categories...</span>
+                <div className="flex items-center gap-4">
+                  <a href="/collections" className="px-4 py-2 text-sm font-medium tracking-wide uppercase text-foreground hover:text-primary transition-colors">
+                    All Collections
+                  </a>
+                </div>
               ) : (
                 categories.map((category) => (
                   <div

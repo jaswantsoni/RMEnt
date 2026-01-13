@@ -35,24 +35,29 @@ export class CategoryCache {
   }
 
   static async getCategories(): Promise<CachedCategory[]> {
-    const cached = this.get();
-    if (cached) return cached;
+    try {
+      const cached = this.get();
+      if (cached) return cached;
 
-    const fetchedCategories = await CategoryApiService.fetchCategories();
-    const transformedCategories = fetchedCategories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      href: `/collections/${cat.slug}`,
-      image: cat.image_url,
-      subcategories: cat.subcategories.map(sub => ({
-        id: sub.id,
-        name: sub.name,
-        href: `/collections/${sub.slug}`,
-        image: sub.image_url
-      }))
-    }));
+      const fetchedCategories = await CategoryApiService.fetchCategories();
+      const transformedCategories = fetchedCategories.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+        href: `/collections/${cat.slug}`,
+        image: cat.image_url,
+        subcategories: cat.subcategories.map(sub => ({
+          id: sub.id,
+          name: sub.name,
+          href: `/collections/${sub.slug}`,
+          image: sub.image_url
+        }))
+      }));
 
-    this.set(transformedCategories);
-    return transformedCategories;
+      this.set(transformedCategories);
+      return transformedCategories;
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      return [];
+    }
   }
 }
