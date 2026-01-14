@@ -69,7 +69,7 @@ export function Footer() {
             <Link to="/" className="inline-block mb-6">
               <h2 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
                 <span className="text-gradient-gold flex">
-                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' />
+                <img src="/main.svg" width={36} height={32} alt="logo" className='mx-2' />
                   AZZARO HOME
                   </span>
                 {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
@@ -159,7 +159,7 @@ export function Footer() {
                 <a
                   key={social.name}
                   href={social.href}
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-gold transition-colors"
                   aria-label={social.name}
                 >
                   <social.icon className="h-5 w-5" />

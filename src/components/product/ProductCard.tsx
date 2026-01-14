@@ -172,11 +172,19 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
               {product.subcategory?.name || product.category?.name}
             </p>
           </Link>
+          {/* SKU */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-thin text-foreground">
+              {product.sku || 'N/A'}
+            </span>
+          </div>
+          
           <Link to={`/product/${product.item_id}`}>
             <h3 className="font-display text-lg font-medium text-foreground mb-2 line-clamp-1 hover:text-primary transition-colors">
               {product.name}
             </h3>
           </Link>
+          
           
           {/* Rating */}
           {product.rating && product.rating > 0 && (
@@ -197,7 +205,6 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
               </span>
             </div>
           )}
-
           {/* Price */}
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">

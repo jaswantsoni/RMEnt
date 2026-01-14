@@ -97,7 +97,7 @@ export default function Index() {
               <img
                 src={"/img/ChatGPT Image Dec 23, 2025, 04_46_12 AM.png"}
                 alt={"test"}
-                className={cn("w-full h-full object-cover")}
+                className={cn("w-full h-full")}
               />
               <div className={cn("absolute")} />
             </div>

@@ -282,7 +282,7 @@ export default function ProductDetail() {
             >
               <div 
                 ref={mainImageRef}
-                className="aspect-square overflow-hidden rounded-sm bg-card cursor-zoom-in"
+                className="aspect-square overflow-hidden rounded-sm cursor-zoom-in bg-transparent"
                 onMouseMove={(e) => {
                   if (!mainImageRef.current) return;
                   const rect = mainImageRef.current.getBoundingClientRect();
@@ -296,14 +296,14 @@ export default function ProductDetail() {
                 <img
                   src={product.images?.[selectedImage]?.url || '/placeholder.jpg'}
                   alt={product.name}
-                  className="w-full h-full object-contain bg-white transition-transform duration-300 ease-out"
+                  className="w-full h-full object-contain transition-transform duration-300 ease-out"
                   style={{
                     transform: isZooming ? 'scale(2)' : 'scale(1)',
                     transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
                   }}
                 />
               </div>
-              <div className="flex gap-4 overflow-x-auto pb-2">
+              <div className="flex gap-4 overflow-x-auto pb-2 bg-white" >
                 {product.images?.map((image, index) => (
                   <button
                     key={image.id}

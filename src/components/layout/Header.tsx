@@ -68,7 +68,7 @@ export function Header() {
             <Link to="/" className="flex-shrink-0">
               <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
                 <span className="text-gradient-gold flex">
-                <img src="/logo-bg.png" width={36} height={32} alt="logo" className='mx-2' loading="eager" decoding="async" />
+                <img src="/main.svg" width={36} height={32} alt="logo" className='mx-2' loading="eager" decoding="async" />
                   AZZARO HOME
                   </span>
                 {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
@@ -136,7 +136,7 @@ export function Header() {
                   'hidden md:block text-lg font-medium tracking-wide transition-colors duration-300',
                   location.pathname === '/contact'
                   ? 'text-primary'
-                  : 'text-foreground/70 hover:text-primary'
+                  : 'text-foreground/70 hover:text-gold'
                 )}
                 >
                 Contact
@@ -144,7 +144,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-foreground/70 hover:text-primary"
+                className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
                 onClick={() => navigate('/search')}
                 >
                 <Search className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative text-foreground/70 hover:text-primary hidden sm:flex"
+                className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
                 onClick={() => navigate('/wishlist')}
                 >
                 <Heart className="h-5 w-5" />
@@ -165,7 +165,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-foreground/70 hover:text-primary hidden sm:flex"
+                className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
                 onClick={() => navigate(isAuthenticated ? '/account' : '/auth')}
                 >
                 {isAuthenticated ? (
@@ -197,7 +197,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative text-foreground/70 hover:text-primary"
+                className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
                 onClick={openCart}
                 >
                 <ShoppingBag className="h-5 w-5" />
@@ -324,7 +324,7 @@ export function Header() {
                       'block py-2 text-lg font-medium transition-colors',
                       location.pathname === '/contact'
                         ? 'text-primary'
-                        : 'text-foreground/70 hover:text-primary'
+                        : 'text-foreground/70 hover:text-gold'
                     )}
                   >
                     Contact
