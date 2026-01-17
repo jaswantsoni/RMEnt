@@ -29,15 +29,55 @@ export default function AuthCallback() {
       if (token) {
         try {
           console.log('Token received:', token);
+          
+          // Try to decode JWT to get user info
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            console.log('Token payload:', payload);
+            
+            // If token has user info, use it directly
+            if (payload.email || payload.sub) {
+              const user = {
+                id: payload.sub || payload.id,
+                email: payload.email,
+                firstName: payload.given_name || payload.first_name || '',
+                lastName: payload.family_name || payload.last_name || '',
+                avatar: payload.picture || payload.avatar_url,
+                addresses: [],
+                createdAt: new Date().toISOString(),
+              };
+              
+              login(user, token);
+              toast({
+                title: 'Welcome!',
+                description: 'Successfully signed in',
+              });
+              navigate(redirect);
+              return;
+            }
+          } catch (e) {
+            console.log('Could not decode token, fetching from API');
+          }
+          
           // Fetch user data with token
           const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
           console.log('Response status:', response.status);
+          console.log('Response headers:', Object.fromEntries(response.headers.entries()));
           
           if (response.ok) {
-            const userData = await response.json();
+            const contentType = response.headers.get('content-type');
+            const responseText = await response.text();
+            console.log('Response body:', responseText.substring(0, 200));
+            
+            if (!contentType || !contentType.includes('application/json')) {
+              console.error('Expected JSON but got:', contentType);
+              throw new Error(`Server returned ${contentType || 'unknown'} instead of JSON`);
+            }
+            
+            const userData = JSON.parse(responseText);
             console.log('User data received:', userData);
             
             // Handle different response formats
@@ -60,9 +100,10 @@ export default function AuthCallback() {
           }
         } catch (error) {
           console.error('Auth callback error:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Failed to complete authentication';
           toast({
-            title: 'Error',
-            description: 'Failed to complete authentication',
+            title: 'Authentication Error',
+            description: errorMessage,
             variant: 'destructive',
           });
           navigate('/auth');
