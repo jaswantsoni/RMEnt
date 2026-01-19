@@ -12,9 +12,14 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const token = searchParams.get('token');
-      const error = searchParams.get('error');
-      const redirect = searchParams.get('redirect') || '/';
+      // Decode HTML entities in URL (backend may send &amp; instead of &)
+      const urlString = window.location.href.replace(/&amp;/g, '&');
+      const url = new URL(urlString);
+      const params = new URLSearchParams(url.search);
+      
+      const token = params.get('token');
+      const error = params.get('error');
+      const redirect = params.get('redirect') || '/';
 
       if (error) {
         toast({
