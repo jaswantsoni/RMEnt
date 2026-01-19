@@ -12,6 +12,9 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log('Raw URL:', window.location.href);
+      console.log('Search params:', window.location.search);
+      
       // Decode HTML entities in URL (backend may send &amp; instead of &)
       const urlString = window.location.href.replace(/&amp;/g, '&');
       const url = new URL(urlString);
@@ -20,6 +23,10 @@ export default function AuthCallback() {
       const token = params.get('token');
       const error = params.get('error');
       const redirect = params.get('redirect') || '/';
+      
+      console.log('Parsed token:', token);
+      console.log('Parsed error:', error);
+      console.log('Parsed redirect:', redirect);
 
       if (error) {
         toast({
