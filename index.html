@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Redirect www to non-www -->
+    <script>
+      if (window.location.hostname === 'www.azzarohome.com') {
+        window.location.replace('https://azzarohome.com' + window.location.pathname + window.location.search + window.location.hash);
+      }
+    </script>
+    
     <!-- Preconnect for faster loading -->
     <link rel="preconnect" href="https://d26hjs463edyav.cloudfront.net" crossorigin>
     <link rel="dns-prefetch" href="https://d26hjs463edyav.cloudfront.net">
