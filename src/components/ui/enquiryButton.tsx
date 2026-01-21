@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 import { customerApi, EnquiryData } from "@/services/customerApi";
-import { GoogleLoginPopup } from "../GoogleLoginPopUp";
+import { GoogleLoginPopup } from "../GooglePopup";
 
 interface EnquiryButtonProps {
   id: string; // product ID
