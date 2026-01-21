@@ -83,6 +83,7 @@ export default function Auth() {
   const handleGoogleSignIn = () => {
     // Redirect to backend Google OAuth endpoint with redirect param
     const redirectParam = encodeURIComponent(redirectTo);
+    console.log('Redirecting to Google OAuth with redirect:', redirectParam);
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google?redirect=${redirectParam}`;
   };
 

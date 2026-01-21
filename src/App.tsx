@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 // Eager load critical pages
 import Index from "./pages/Index";
 import PopCallback from './pages/PopCallBack';
+import { usePopupLoginListener } from './hooks/usePopupLoginListener';
 
 // Lazy load non-critical pages for code splitting
 const Collections = lazy(() => import("./pages/Collections"));
@@ -48,6 +49,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
+   usePopupLoginListener(),
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />

@@ -12,27 +12,29 @@ import { ShopifyApiService } from '@/lib/shopifyApi';
 import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { usePopupLoginListener } from '@/hooks/usePopupLoginListener';
 // Products will be loaded from Google Drive
 
 // const categories: Category[] = [
-//   { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
-//   { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
-//   { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space with elegance', image: '', productCount: 0 },
-//   { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort meets style', image: '', productCount: 0 },
-//   { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
-//   { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
-//   { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
-//   { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
-// ];
-
-const features = [
-  { icon: Truck, title: 'Free Shipping', description: 'On orders above $5,000' },
-  // { icon: Shield, title: '2 Year Warranty', description: 'On all products' },
-  { icon: RefreshCw, title: 'Easy Returns', description: '30-day return policy' },
-  { icon: Sparkles, title: 'Premium Quality', description: 'Handpicked products' },
-];
-
-export default function Index() {
+  //   { id: '1', name: 'Bath Fittings', slug: 'bath-fittings', description: 'Premium bathroom luxury', image: '', productCount: 0 },
+  //   { id: '2', name: 'Hardware', slug: 'hardware', description: 'Quality hardware solutions', image: '', productCount: 0 },
+  //   { id: '3', name: 'Lighting', slug: 'lighting', description: 'Illuminate your space with elegance', image: '', productCount: 0 },
+  //   { id: '4', name: 'Fans', slug: 'fans', description: 'Premium comfort meets style', image: '', productCount: 0 },
+  //   { id: '5', name: 'Home Decor', slug: 'home-decor', description: 'Elevate your living space', image: '', productCount: 0 },
+  //   { id: '6', name: 'Furniture', slug: 'furniture', description: 'Timeless furniture pieces', image: '', productCount: 0 },
+  //   { id: '7', name: 'Carpet & Rugs', slug: 'carpet-rugs', description: 'Luxurious floor coverings', image: '', productCount: 0 },
+  //   { id: '8', name: 'Perfume', slug: 'perfume', description: 'Signature fragrances', image: '', productCount: 0 },
+  // ];
+  
+  const features = [
+    { icon: Truck, title: 'Free Shipping', description: 'On orders above $5,000' },
+    // { icon: Shield, title: '2 Year Warranty', description: 'On all products' },
+    { icon: RefreshCw, title: 'Easy Returns', description: '30-day return policy' },
+    { icon: Sparkles, title: 'Premium Quality', description: 'Handpicked products' },
+  ];
+  
+  export default function Index() {
+  usePopupLoginListener();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { setProducts: setStoreProducts } = useProductStore();
   const [categories, setCategories] = useState<Category[]>([]);

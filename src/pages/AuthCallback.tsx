@@ -41,6 +41,22 @@ export default function AuthCallback() {
       if (token) {
         try {
           console.log('Token received:', token);
+          if (window.opener) {
+            if (token) {
+              // Send token to main window
+              window.opener.postMessage({ token }, window.location.origin);
+            }
+            if (error) {
+              window.opener.postMessage({ error }, window.location.origin);
+            }
+
+            // Close the popup after a short delay to ensure message is sent
+            setTimeout(() => {
+              window.close();
+            }, 100);
+          } else {
+            console.warn("No window.opener found. This page should be opened as a popup.");
+          }
           
           // Fetch user data with token
           const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/me`, {
@@ -75,7 +91,9 @@ export default function AuthCallback() {
                 title: 'Welcome!',
                 description: 'Successfully signed in with Google',
               });
-              navigate(redirect);
+              // navigate(redirect);
+              window.location.href = redirect;
+              
             } else {
               throw new Error('No user data in response');
             }

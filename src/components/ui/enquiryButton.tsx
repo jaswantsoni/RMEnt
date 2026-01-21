@@ -22,11 +22,11 @@ export const EnquiryButton: React.FC<EnquiryButtonProps> = ({ id, setFormVisible
   });
 
   // Prefill if user is logged in (optional)
-//   useEffect(() => {
-//     if (user) {
-//       setFormVisible(true);
-//     }
-//   }, [user]);
+  useEffect(() => {
+    if (!user) {
+      setShowLoginPopup(true);
+    }
+  }, [user]);
 
 //   const handleEnquiryClick = () => {
 //     if (user) {
@@ -38,6 +38,7 @@ export const EnquiryButton: React.FC<EnquiryButtonProps> = ({ id, setFormVisible
 
   const handleSubmit = async () => {
     // setFormVisible(false);
+    
     setFormVisible(false);
     if(loading) return;
     setLoading(true);
