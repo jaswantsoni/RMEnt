@@ -76,7 +76,7 @@ const App = () => (
             <Route path="/manual-upload" element={<ManualUpload />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/popup-callback" element={<PopCallback />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
           </Routes>
         </Suspense>
