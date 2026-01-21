@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import Index from "./pages/Index";
 import PopCallback from './pages/PopCallBack';
 import { usePopupLoginListener } from './hooks/usePopupLoginListener';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 // Lazy load non-critical pages for code splitting
 const Collections = lazy(() => import("./pages/Collections"));
@@ -75,6 +76,8 @@ const App = () => (
             <Route path="/manual-upload" element={<ManualUpload />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/popup-callback" element={<PopCallback />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+
           </Routes>
         </Suspense>
       </BrowserRouter>
