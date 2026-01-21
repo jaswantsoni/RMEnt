@@ -13,14 +13,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 export default function Account() {
-  const { user, logout } = useUserStore();
+  const { user, logout, setUser } = useUserStore();
   const { addresses, fetchAddresses, addAddress, deleteAddress } = useAddressStore();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   console.log('User data in Account:', user);
+  
   
   const [formData, setFormData] = useState({
     firstName: user?.firstName || user?.first_name || '',
@@ -31,22 +33,97 @@ export default function Account() {
 
   useEffect(() => {
     fetchAddresses();
+    fetchUserDetails();
   }, [fetchAddresses]);
+  
+  const fetchUserDetails = async () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        const rawUser = result.data?.user;
+        
+        if (rawUser) {
+          const normalizedUser = {
+            ...rawUser,
+            firstName: rawUser.first_name || '',
+            lastName: rawUser.last_name || '',
+            addresses: rawUser.addresses || [],
+          };
+          
+          setUser(normalizedUser);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user details:', error);
+    }
+  };
+  
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || user.first_name || '',
+        lastName: user.lastName || user.last_name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
 
   const handleSave = async () => {
+    setIsLoading(true);
+    const token = localStorage.getItem('auth_token');
+    
     try {
-      // API call to update user profile
-      toast({
-        title: 'Profile Updated',
-        description: 'Your profile has been updated successfully.',
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+        })
       });
-      setIsEditing(false);
+      
+      if (response.ok) {
+        const result = await response.json();
+        const rawUser = result.data?.user;
+        
+        if (rawUser) {
+          const normalizedUser = {
+            ...rawUser,
+            firstName: rawUser.first_name || '',
+            lastName: rawUser.last_name || '',
+          };
+          
+          setUser(normalizedUser);
+          toast({
+            title: 'Profile Updated',
+            description: 'Your profile has been updated successfully.',
+          });
+          setIsEditing(false);
+        }
+      } else {
+        throw new Error('Failed to update profile');
+      }
     } catch (error) {
+      console.error('Update error:', error);
       toast({
         title: 'Error',
         description: 'Failed to update profile',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -156,10 +233,10 @@ export default function Account() {
 
                 {isEditing && (
                   <div className="flex gap-4">
-                    <Button onClick={handleSave} className="flex-1">
-                      Save Changes
+                    <Button onClick={handleSave} className="flex-1" disabled={isLoading}>
+                      {isLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)} className="text-foreground">
+                    <Button variant="outline" onClick={() => setIsEditing(false)} className="text-foreground" disabled={isLoading}>
                       Cancel
                     </Button>
                   </div>
@@ -195,34 +272,30 @@ export default function Account() {
                   />
                 ) : (
                   <div className="space-y-4">
-                    {Array.isArray(addresses) && addresses.length > 0 ? (
-                      addresses.map((address) => (
+                    {Array.isArray(user?.addresses) && user.addresses.length > 0 ? (
+                      user.addresses.map((address: any) => (
                         <div key={address.id} className="p-4 border rounded-lg">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="font-medium">
-                                {address.firstName} {address.lastName}
+                                {address.first_name} {address.last_name}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {address.address1}
-                                {address.address2 && `, ${address.address2}`}
+                                {address.address_line_1}
+                                {address.address_line_2 && `, ${address.address_line_2}`}
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                {address.city}, {address.state} {address.zipCode}
+                                {address.city}, {address.state} {address.zip_code}
                               </p>
-                              {address.isDefault && (
-                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                              <p className="text-sm text-muted-foreground">
+                                {address.phone}
+                              </p>
+                              {address.is_default && (
+                                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded mt-2 inline-block">
                                   Default
                                 </span>
                               )}
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteAddress(address.id)}
-                            >
-                              Delete
-                            </Button>
                           </div>
                         </div>
                       ))

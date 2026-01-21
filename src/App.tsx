@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 
 // Eager load critical pages
 import Index from "./pages/Index";
+import PopCallback from './pages/PopCallBack';
 
 // Lazy load non-critical pages for code splitting
 const Collections = lazy(() => import("./pages/Collections"));
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/manual-upload" element={<ManualUpload />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/popup-callback" element={<PopCallback />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

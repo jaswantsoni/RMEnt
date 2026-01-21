@@ -7,6 +7,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { EnquiryButton } from '../ui/enquiryButton';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +21,11 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
   const inCart = cart?.items?.some(item => item.productId === product.id || item.product?.id === product.id);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+  const [formVisible, setformVisible] = useState(false);
+  const handleEnquiryClick = () => {
+    // Open enquiry modal logic here
+    setformVisible(true);
+  }
   
   useEffect(() => {
     fetchWishlist();
@@ -51,6 +57,10 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
   };
 
   return (
+    <>
+    {formVisible && (
+      <EnquiryButton id={product.id} setFormVisible={setformVisible}/>
+    )}
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -60,9 +70,12 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
     >
       <div className="relative bg-card rounded-sm overflow-hidden luxury-border hover-lift">
         {/* Image Container with Zoom */}
+        <div
+                  className="block relative aspect-square overflow-hidden"
+>
+
         <Link 
-          to={`/product/${product.item_id}`} 
-          className="block relative aspect-square overflow-hidden"
+          to={`/product/${product.item_id}`}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setIsZooming(true)}
           onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
@@ -134,7 +147,8 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
           </div>
 
           {/* Add to Cart Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-10">
+        </Link>
+          <div className="absolute bottom-10 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-10">
             <Button
               onClick={async (e) => {
                 e.preventDefault();
@@ -163,7 +177,17 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
               )}
             </Button>
           </div>
-        </Link>
+          <div className=" py-1 absolute bottom-0 w-full left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-70 group-hover:translate-y-0 z-10">
+            {/* <EnquiryButton id={product.id}/> */}
+            <button
+        className="px-4 py-2 w-full bg-primary text-white rounded transition-colors cursor-pointer hover:bg-primary-700"
+        onClick={handleEnquiryClick}
+      >
+        Enquiry
+      </button>
+          </div>
+        </div>
+          
 
         {/* Product Info */}
         <div className="p-4">
@@ -217,7 +241,9 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             )}
           </div>
         </div>
+        
       </div>
     </motion.div>
+    </>
   );
 });

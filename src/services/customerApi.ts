@@ -1,5 +1,11 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
+export type EnquiryData = {
+  productId: string;
+  message: string;
+  date: string;
+  quantity: number;
+}
 class CustomerApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem('auth_token');
@@ -98,6 +104,15 @@ class CustomerApiService {
     const response = await fetch(`${BACKEND_URL}/api/customer/wishlist/${wishlistItemId}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders()
+    });
+    return response.json();
+  }
+
+  async submitEnquiry(enquiryData: EnquiryData) {
+    const response = await fetch(`${BACKEND_URL}/contact/enquiry`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(enquiryData)
     });
     return response.json();
   }
