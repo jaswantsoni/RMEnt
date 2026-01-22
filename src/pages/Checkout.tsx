@@ -344,7 +344,7 @@ export default function Checkout() {
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground/60">
                     <Truck className="h-4 w-4" />
-                    Free shipping on orders above $5,000
+                    Free shipping on orders above $1,000
                   </div>
                   <div className="flex items-center gap-2 text-sm text-foreground/60">
                     <Shield className="h-4 w-4" />

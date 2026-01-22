@@ -27,9 +27,9 @@ import { usePopupLoginListener } from '@/hooks/usePopupLoginListener';
   // ];
   
   const features = [
-    { icon: Truck, title: 'Free Shipping', description: 'On orders above $5,000' },
+    { icon: Truck, title: 'Free Shipping', description: 'On orders above $1,000' },
     // { icon: Shield, title: '2 Year Warranty', description: 'On all products' },
-    { icon: RefreshCw, title: 'Easy Returns', description: '30-day return policy' },
+    { icon: RefreshCw, title: 'Easy Returns', description: '14-days return policy' },
     { icon: Sparkles, title: 'Premium Quality', description: 'Handpicked products' },
   ];
   
