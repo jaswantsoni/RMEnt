@@ -81,7 +81,7 @@ export function Footer() {
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span>2420 Celsius Ave, Unit K, Oxnard, CA 93030, USA</span>
+                <span>22766 Ventura Blvd #1392, Woodland Hills, CA 91364</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary" />

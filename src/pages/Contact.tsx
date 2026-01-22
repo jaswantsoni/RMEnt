@@ -29,7 +29,7 @@ const contactInfo = [
   {
     icon: MapPin,
     title: 'Address',
-    details: ['2420 Celsius Ave, Unit K, Oxnard, CA 93030, USA'],
+    details: ['22766 Ventura Blvd #1392, Woodland Hills, CA 91364'],
   },
   {
     icon: Clock,
@@ -97,8 +97,9 @@ export default function Contact() {
 
               {/* Map placeholder */}
               <div className="mt-12 aspect-video rounded-sm overflow-hidden bg-card luxury-border">
+                {/* <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3301.23252561492!2d-118.62271399999999!3d34.1659722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c29e8893401a77%3A0x23f63267c3131c72!2s22766%20Ventura%20Blvd%20%231392%2C%20Woodland%20Hills%2C%20CA%2091364%2C%20USA!5e0!3m2!1sen!2sin!4v1769107886596!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> */}
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3299.7535922343673!2d-119.14613302410723!3d34.20377170971368!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80e84eabc9be605b%3A0x434d6eb3e578f5ce!2s2420%20Celsius%20Ave%20STE%20K%2C%20Oxnard%2C%20CA%2093030%2C%20USA!5e0!3m2!1sen!2sin!4v1766173146791!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3301.23252561492!2d-118.62271399999999!3d34.1659722!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c29e8893401a77%3A0x23f63267c3131c72!2s22766%20Ventura%20Blvd%20%231392%2C%20Woodland%20Hills%2C%20CA%2091364%2C%20USA!5e0!3m2!1sen!2sin!4v1769107886596!5m2!1sen!2sin"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
