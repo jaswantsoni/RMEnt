@@ -1,180 +1,291 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useUserStore } from '@/store/userStore';
+import { toast } from 'sonner';
 
-interface Address {
-  id?: string;
-  type: 'shipping' | 'billing';
-  firstName: string;
-  lastName: string;
-  company?: string;
-  address1: string;
-  address2?: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  phone?: string;
-  isDefault: boolean;
-}
+const addressSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  company: z.string().optional(),
+  address1: z.string().min(1, 'Address is required'),
+  address2: z.string().optional(),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().min(1, 'State is required'),
+  zipCode: z.string().min(1, 'ZIP code is required'),
+  country: z.string().min(1, 'Country is required'),
+  phone: z.string().min(1, 'Phone is required'),
+});
+
+type AddressFormData = z.infer<typeof addressSchema>;
 
 interface AddressFormProps {
-  address?: Address;
-  onSave: (address: Omit<Address, 'id'>) => Promise<void>;
-  onCancel: () => void;
-  loading?: boolean;
+  onSave?: (address: any) => void;
+  onCancel?: () => void;
 }
 
-export function AddressForm({ address, onSave, onCancel, loading }: AddressFormProps) {
-  const [formData, setFormData] = useState<Omit<Address, 'id'>>({
-    type: address?.type || 'shipping',
-    firstName: address?.firstName || '',
-    lastName: address?.lastName || '',
-    company: address?.company || '',
-    address1: address?.address1 || '',
-    address2: address?.address2 || '',
-    city: address?.city || '',
-    state: address?.state || '',
-    zipCode: address?.zipCode || '',
-    country: address?.country || 'US',
-    phone: address?.phone || '',
-    isDefault: address?.isDefault || false,
+export function AddressForm({ onSave, onCancel }: AddressFormProps) {
+  const [sameAsShipping, setSameAsShipping] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { user } = useUserStore();
+
+  const shippingForm = useForm<AddressFormData>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: {
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      company: '',
+      address1: '',
+      address2: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'US',
+      phone: user?.phone || '',
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSave(formData);
-  };
+  const billingForm = useForm<AddressFormData>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: {
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      company: '',
+      address1: '',
+      address2: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'US',
+      phone: user?.phone || '',
+    },
+  });
 
-  const handleChange = (field: keyof typeof formData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSubmit = async () => {
+    const shippingValid = await shippingForm.trigger();
+    const billingValid = sameAsShipping || await billingForm.trigger();
+
+    if (!shippingValid || !billingValid) return;
+
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const shippingData = shippingForm.getValues();
+      const billingData = sameAsShipping ? shippingData : billingForm.getValues();
+
+      // Save shipping address
+      const shippingRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/customer/addresses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'shipping',
+          ...shippingData,
+          isDefault: true,
+        }),
+      });
+
+      if (!shippingRes.ok) throw new Error('Failed to save shipping address');
+
+      // Save billing address
+      const billingRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/customer/addresses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'billing',
+          ...billingData,
+          isDefault: true,
+        }),
+      });
+
+      if (!billingRes.ok) throw new Error('Failed to save billing address');
+
+      toast.success('Addresses saved successfully');
+      onSave?.(shippingData);
+    } catch (error) {
+      toast.error('Failed to save addresses');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="type">Address Type</Label>
-          <Select value={formData.type} onValueChange={(value) => handleChange('type', value)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="shipping">Shipping</SelectItem>
-              <SelectItem value="billing">Billing</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center space-x-2 pt-6">
-          <Checkbox 
-            id="isDefault" 
-            checked={formData.isDefault}
-            onCheckedChange={(checked) => handleChange('isDefault', !!checked)}
-          />
-          <Label htmlFor="isDefault">Set as default</Label>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="firstName">First Name</Label>
-          <Input
-            id="firstName"
-            value={formData.firstName}
-            onChange={(e) => handleChange('firstName', e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="lastName">Last Name</Label>
-          <Input
-            id="lastName"
-            value={formData.lastName}
-            onChange={(e) => handleChange('lastName', e.target.value)}
-            required
-          />
-        </div>
-      </div>
-
+    <div className="space-y-8">
+      {/* Shipping Address */}
       <div>
-        <Label htmlFor="company">Company (Optional)</Label>
-        <Input
-          id="company"
-          value={formData.company}
-          onChange={(e) => handleChange('company', e.target.value)}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="address1">Address Line 1</Label>
-        <Input
-          id="address1"
-          value={formData.address1}
-          onChange={(e) => handleChange('address1', e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="address2">Address Line 2 (Optional)</Label>
-        <Input
-          id="address2"
-          value={formData.address2}
-          onChange={(e) => handleChange('address2', e.target.value)}
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="city">City</Label>
-          <Input
-            id="city"
-            value={formData.city}
-            onChange={(e) => handleChange('city', e.target.value)}
-            required
-          />
+        <h3 className="text-xl font-semibold mb-4">Shipping Address</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>First Name *</Label>
+            <Input {...shippingForm.register('firstName')} />
+            {shippingForm.formState.errors.firstName && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.firstName.message}</p>
+            )}
+          </div>
+          <div>
+            <Label>Last Name *</Label>
+            <Input {...shippingForm.register('lastName')} />
+            {shippingForm.formState.errors.lastName && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.lastName.message}</p>
+            )}
+          </div>
+          <div className="col-span-2">
+            <Label>Company</Label>
+            <Input {...shippingForm.register('company')} />
+          </div>
+          <div className="col-span-2">
+            <Label>Address Line 1 *</Label>
+            <Input {...shippingForm.register('address1')} />
+            {shippingForm.formState.errors.address1 && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.address1.message}</p>
+            )}
+          </div>
+          <div className="col-span-2">
+            <Label>Address Line 2</Label>
+            <Input {...shippingForm.register('address2')} />
+          </div>
+          <div>
+            <Label>City *</Label>
+            <Input {...shippingForm.register('city')} />
+            {shippingForm.formState.errors.city && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.city.message}</p>
+            )}
+          </div>
+          <div>
+            <Label>State *</Label>
+            <Input {...shippingForm.register('state')} />
+            {shippingForm.formState.errors.state && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.state.message}</p>
+            )}
+          </div>
+          <div>
+            <Label>ZIP Code *</Label>
+            <Input {...shippingForm.register('zipCode')} />
+            {shippingForm.formState.errors.zipCode && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.zipCode.message}</p>
+            )}
+          </div>
+          <div>
+            <Label>Country *</Label>
+            <Input {...shippingForm.register('country')} />
+            {shippingForm.formState.errors.country && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.country.message}</p>
+            )}
+          </div>
+          <div className="col-span-2">
+            <Label>Phone *</Label>
+            <Input {...shippingForm.register('phone')} />
+            {shippingForm.formState.errors.phone && (
+              <p className="text-sm text-destructive mt-1">{shippingForm.formState.errors.phone.message}</p>
+            )}
+          </div>
         </div>
-        <div>
-          <Label htmlFor="state">State</Label>
-          <Input
-            id="state"
-            value={formData.state}
-            onChange={(e) => handleChange('state', e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="zipCode">ZIP Code</Label>
-          <Input
-            id="zipCode"
-            value={formData.zipCode}
-            onChange={(e) => handleChange('zipCode', e.target.value)}
-            required
-          />
-        </div>
       </div>
 
-      <div>
-        <Label htmlFor="phone">Phone (Optional)</Label>
-        <Input
-          id="phone"
-          type="tel"
-          value={formData.phone}
-          onChange={(e) => handleChange('phone', e.target.value)}
+      {/* Same as Shipping Checkbox */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="sameAsShipping"
+          checked={sameAsShipping}
+          onCheckedChange={(checked) => setSameAsShipping(checked as boolean)}
         />
+        <Label htmlFor="sameAsShipping" className="cursor-pointer">
+          Billing address same as shipping
+        </Label>
       </div>
 
-      <div className="flex gap-4 pt-4">
-        <Button type="submit" disabled={loading} className="flex-1">
-          {loading ? 'Saving...' : 'Save Address'}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
+      {/* Billing Address */}
+      {!sameAsShipping && (
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Billing Address</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>First Name *</Label>
+              <Input {...billingForm.register('firstName')} />
+              {billingForm.formState.errors.firstName && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.firstName.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>Last Name *</Label>
+              <Input {...billingForm.register('lastName')} />
+              {billingForm.formState.errors.lastName && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.lastName.message}</p>
+              )}
+            </div>
+            <div className="col-span-2">
+              <Label>Company</Label>
+              <Input {...billingForm.register('company')} />
+            </div>
+            <div className="col-span-2">
+              <Label>Address Line 1 *</Label>
+              <Input {...billingForm.register('address1')} />
+              {billingForm.formState.errors.address1 && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.address1.message}</p>
+              )}
+            </div>
+            <div className="col-span-2">
+              <Label>Address Line 2</Label>
+              <Input {...billingForm.register('address2')} />
+            </div>
+            <div>
+              <Label>City *</Label>
+              <Input {...billingForm.register('city')} />
+              {billingForm.formState.errors.city && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.city.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>State *</Label>
+              <Input {...billingForm.register('state')} />
+              {billingForm.formState.errors.state && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.state.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>ZIP Code *</Label>
+              <Input {...billingForm.register('zipCode')} />
+              {billingForm.formState.errors.zipCode && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.zipCode.message}</p>
+              )}
+            </div>
+            <div>
+              <Label>Country *</Label>
+              <Input {...billingForm.register('country')} />
+              {billingForm.formState.errors.country && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.country.message}</p>
+              )}
+            </div>
+            <div className="col-span-2">
+              <Label>Phone *</Label>
+              <Input {...billingForm.register('phone')} />
+              {billingForm.formState.errors.phone && (
+                <p className="text-sm text-destructive mt-1">{billingForm.formState.errors.phone.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Button onClick={handleSubmit} disabled={loading} className="w-full">
+        {loading ? 'Saving...' : 'Save Addresses'}
+      </Button>
+      {onCancel && (
+        <Button onClick={onCancel} variant="outline" className="w-full mt-2">
           Cancel
         </Button>
-      </div>
-    </form>
+      )}
+    </div>
   );
 }

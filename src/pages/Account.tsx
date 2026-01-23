@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AddressForm } from '@/components/AddressForm';
+import { SingleAddressForm } from '@/components/SingleAddressForm';
 import { useUserStore } from '@/store/userStore';
 import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
@@ -246,30 +247,34 @@ export default function Account() {
               <div className="mt-8 pt-8 border-t">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Addresses</h3>
-                  <Button onClick={() => setShowAddressForm(true)} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Address
-                  </Button>
+                  {user?.addresses && user.addresses.length > 0 && (
+                    <Button onClick={() => setShowAddressForm(true)} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Address
+                    </Button>
+                  )}
                 </div>
                 
                 {showAddressForm ? (
-                  <AddressForm
-                    onSave={async (address) => {
-                      try {
-                        await addAddress(address);
+                  user?.addresses && user.addresses.length > 0 ? (
+                    <SingleAddressForm
+                      onSave={async () => {
                         setShowAddressForm(false);
+                        await fetchUserDetails();
                         toast({ title: 'Address added successfully' });
-                      } catch (error) {
-                        console.error('Error adding address:', error);
-                        toast({ 
-                          title: 'Error', 
-                          description: 'Failed to add address',
-                          variant: 'destructive'
-                        });
-                      }
-                    }}
-                    onCancel={() => setShowAddressForm(false)}
-                  />
+                      }}
+                      onCancel={() => setShowAddressForm(false)}
+                    />
+                  ) : (
+                    <AddressForm
+                      onSave={async () => {
+                        setShowAddressForm(false);
+                        await fetchUserDetails();
+                        toast({ title: 'Addresses saved successfully' });
+                      }}
+                      onCancel={() => setShowAddressForm(false)}
+                    />
+                  )
                 ) : (
                   <div className="space-y-4">
                     {Array.isArray(user?.addresses) && user.addresses.length > 0 ? (
@@ -300,7 +305,13 @@ export default function Account() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-muted-foreground">No addresses saved yet.</p>
+                      <div className="text-center py-8">
+                        <p className="text-sm text-muted-foreground mb-4">No addresses saved yet.</p>
+                        <Button onClick={() => setShowAddressForm(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Your First Address
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}
