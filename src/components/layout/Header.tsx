@@ -38,8 +38,21 @@ export function Header() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const cachedCategories = await CategoryCache.getCategories();
-        setCategories(cachedCategories);
+        const { CategoryApiService } = await import('@/lib/categoryApi');
+        const fetchedCategories = await CategoryApiService.fetchCategories();
+        const transformedCategories = fetchedCategories.map(cat => ({
+          ...cat,
+          name: cat.name,
+          href: `/collections/${cat.slug}`,
+          image: cat.image_url || '',
+          subcategories: cat.subcategories?.map(sub => ({
+            ...sub,
+            name: sub.name,
+            href: `/collections/${sub.slug}`,
+            image: sub.image_url || ''
+          })) || []
+        }));
+        setCategories(transformedCategories);
       } catch (error) {
         console.error('Failed to load categories:', error);
         setCategories([]);

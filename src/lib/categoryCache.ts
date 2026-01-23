@@ -7,11 +7,13 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 export interface CachedCategory {
   id: string;
   name: string;
+  slug: string;
   href: string;
   image: string;
   subcategories: {
     id: string;
     name: string;
+    slug: string;
     href: string;
     image: string;
   }[];
@@ -43,11 +45,13 @@ export class CategoryCache {
       const transformedCategories = fetchedCategories.map(cat => ({
         id: cat.id,
         name: cat.name,
+        slug: cat.slug,
         href: `/collections/${cat.slug}`,
         image: cat.image_url,
         subcategories: cat.subcategories.map(sub => ({
           id: sub.id,
           name: sub.name,
+          slug: sub.slug,
           href: `/collections/${sub.slug}`,
           image: sub.image_url
         }))

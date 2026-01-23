@@ -35,8 +35,27 @@ export const useAddressStore = create<AddressState>((set, get) => ({
     try {
       const response = await customerApi.getAddresses();
       console.log('Fetch addresses response:', response);
-      if (response.success && Array.isArray(response.data)) {
-        set({ addresses: response.data });
+      if (response.success && response.data) {
+        // Transform backend addresses to match frontend format
+        const transformedAddresses = Array.isArray(response.data.addresses) 
+          ? response.data.addresses.map((addr: any) => ({
+              id: addr.id,
+              type: addr.type || 'shipping',
+              firstName: addr.first_name || addr.firstName || '',
+              lastName: addr.last_name || addr.lastName || '',
+              company: addr.company || '',
+              address1: addr.address_line_1 || addr.address1 || '',
+              address2: addr.address_line_2 || addr.address2 || '',
+              city: addr.city || '',
+              state: addr.state || '',
+              zipCode: addr.zip_code || addr.zipCode || '',
+              country: addr.country || 'US',
+              phone: addr.phone || '',
+              isDefault: addr.is_default || addr.isDefault || false,
+            }))
+          : [];
+        console.log('Transformed addresses:', transformedAddresses);
+        set({ addresses: transformedAddresses });
       } else {
         set({ addresses: [] });
       }

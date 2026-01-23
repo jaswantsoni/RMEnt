@@ -1,23 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CreditCard, Truck, Shield, Check } from 'lucide-react';
+import { ArrowLeft, Truck, Shield, Check } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
+import { formatUSD, calculateCartTotals, getTaxRate } from '@/lib/usUtils';
+import { apiClient } from '@/lib/apiClient';
 
-type CheckoutStep = 'shipping' | 'payment' | 'review';
+// type CheckoutStep = 'shipping' | 'payment' | 'review';
+type CheckoutStep = 'shipping' | 'review';
 
 export default function Checkout() {
   const [step, setStep] = useState<CheckoutStep>('shipping');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedShippingId, setSelectedShippingId] = useState<string | null>(null);
+  const [selectedBillingId, setSelectedBillingId] = useState<string | null>(null);
+  const [sameAsShipping, setSameAsShipping] = useState(true);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [shippingData, setShippingData] = useState({
     firstName: '',
     lastName: '',
@@ -28,9 +34,9 @@ export default function Checkout() {
     city: '',
     state: '',
     postalCode: '',
-    country: 'India',
+    country: 'US',
   });
-  const [paymentMethod, setPaymentMethod] = useState('card');
+
 
   const { cart, clearCart } = useCartStore();
   const { isAuthenticated, user } = useUserStore();
@@ -44,19 +50,24 @@ export default function Checkout() {
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStep('payment');
-  };
-
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     setStep('review');
   };
 
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      // In production, call api.createOrder()
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const orderData = {
+        line_items: cart.items.map(item => ({
+          item_id: item.product.item_id,
+          quantity: item.quantity,
+          unit: 'Nos'
+        })),
+        shipping_address: selectedShippingId,
+        billing_address: sameAsShipping ? selectedShippingId : selectedBillingId
+      };
+
+      await apiClient.post('/api/contact/order', orderData);
+
       clearCart();
       toast({ title: 'Order placed!', description: 'Thank you for your purchase. You will receive a confirmation email shortly.' });
       navigate('/account/orders');
@@ -78,8 +89,12 @@ export default function Checkout() {
       return;
     }
 
-    // Fetch addresses
-    fetchAddresses();
+    // Fetch addresses on mount
+    const loadAddresses = async () => {
+      await fetchAddresses();
+      console.log('Addresses after fetch:', addresses);
+    };
+    loadAddresses();
 
     // Pre-fill form with user data
     if (user) {
@@ -95,29 +110,36 @@ export default function Checkout() {
 
   // Pre-fill with default address when addresses load
   useEffect(() => {
-    if (Array.isArray(addresses) && addresses.length > 0) {
-      const defaultAddress = addresses.find(addr => addr.isDefault && addr.type === 'shipping');
-      if (defaultAddress && !shippingData.address1) {
-        setShippingData(prev => ({
-          ...prev,
-          firstName: defaultAddress.firstName || prev.firstName,
-          lastName: defaultAddress.lastName || prev.lastName,
-          phone: defaultAddress.phone || prev.phone,
-          address1: defaultAddress.address1,
-          address2: defaultAddress.address2 || '',
-          city: defaultAddress.city,
-          state: defaultAddress.state,
-          postalCode: defaultAddress.zipCode,
-          country: defaultAddress.country,
-        }));
+    if (Array.isArray(addresses) && addresses.length > 0 && !selectedShippingId) {
+      const defaultShipping = addresses.find(addr => addr.isDefault && addr.type === 'shipping');
+      const defaultBilling = addresses.find(addr => addr.isDefault && addr.type === 'billing');
+      
+      if (defaultShipping) {
+        setSelectedShippingId(defaultShipping.id);
+        setShippingData({
+          firstName: defaultShipping.firstName || '',
+          lastName: defaultShipping.lastName || '',
+          email: user?.email || '',
+          phone: defaultShipping.phone || '',
+          address1: defaultShipping.address1,
+          address2: defaultShipping.address2 || '',
+          city: defaultShipping.city,
+          state: defaultShipping.state,
+          postalCode: defaultShipping.zipCode,
+          country: defaultShipping.country,
+        });
+      }
+      
+      if (defaultBilling) {
+        setSelectedBillingId(defaultBilling.id);
+        setSameAsShipping(false);
       }
     }
-  }, [addresses]);
+  }, [addresses, selectedShippingId, user]);
 
   const subtotal = cart?.subtotal || 0;
-  const shipping = subtotal > 1000 ? 0 : 30;
-  const tax = Math.round(subtotal * 0.18);
-  const total = subtotal + shipping + tax;
+  const { tax, shipping, total } = calculateCartTotals(subtotal, shippingData.state);
+  const taxRate = getTaxRate(shippingData.state);
 
   // Don't render checkout if not authenticated
   if (!isAuthenticated) {
@@ -156,18 +178,18 @@ export default function Checkout() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               {/* Progress Steps */}
-              <div className="flex items-center justify-between mb-8 px-4">
-                {['shipping', 'payment', 'review'].map((s, i) => (
+              <div className="flex items-center justify-between mb-8 px-4 max-w-md mx-auto">
+                {['shipping', 'review'].map((s, i) => (
                   <div key={s} className="flex items-center">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-colors ${
                         step === s ? 'bg-primary text-primary-foreground' :
-                        ['shipping', 'payment', 'review'].indexOf(step) > i ? 'bg-primary/20 text-primary' : 'bg-card text-foreground/40'
+                        ['shipping', 'review'].indexOf(step) > i ? 'bg-primary/20 text-slate-800' : 'bg-card text-slate-400'
                       }`}
                     >
-                      {['shipping', 'payment', 'review'].indexOf(step) > i ? <Check className="h-5 w-5" /> : i + 1}
+                      {['shipping', 'review'].indexOf(step) > i ? <Check className="h-5 w-5" /> : i + 1}
                     </div>
-                    {i < 2 && <div className={`w-20 sm:w-32 h-0.5 mx-2 ${['shipping', 'payment', 'review'].indexOf(step) > i ? 'bg-primary' : 'bg-border'}`} />}
+                    {i < 1 && <div className={`w-32 sm:w-48 h-0.5 mx-2 ${['shipping', 'review'].indexOf(step) > i ? 'bg-primary' : 'bg-border'}`} />}
                   </div>
                 ))}
               </div>
@@ -176,7 +198,104 @@ export default function Checkout() {
               {step === 'shipping' && (
                 <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                   <h2 className="text-2xl font-display font-semibold mb-6">Shipping Address</h2>
-                  <form onSubmit={handleShippingSubmit} className="space-y-4">
+                  
+                  {/* Saved Addresses */}
+                  {Array.isArray(addresses) && addresses.length > 0 && !showNewAddressForm && (
+                    <div className="space-y-6 mb-6">
+                      {/* Shipping Address */}
+                      <div className="space-y-3">
+                        <h3 className="font-medium">Shipping Address</h3>
+                        <div className="grid gap-3">
+                          {addresses.filter(addr => addr.type === 'shipping').map((addr) => (
+                            <div
+                              key={addr.id}
+                              onClick={() => {
+                                setSelectedShippingId(addr.id);
+                                setShippingData({
+                                  firstName: addr.firstName,
+                                  lastName: addr.lastName,
+                                  email: user?.email || '',
+                                  phone: addr.phone,
+                                  address1: addr.address1,
+                                  address2: addr.address2 || '',
+                                  city: addr.city,
+                                  state: addr.state,
+                                  postalCode: addr.zipCode,
+                                  country: addr.country,
+                                });
+                              }}
+                              className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                selectedShippingId === addr.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border hover:border-primary/50'
+                              }`}
+                            >
+                              <p className="font-medium">{addr.firstName} {addr.lastName}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {addr.address1}{addr.address2 && `, ${addr.address2}`}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {addr.city}, {addr.state} {addr.zipCode}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Same as Shipping Checkbox */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="sameAsShipping"
+                          checked={sameAsShipping}
+                          onChange={(e) => setSameAsShipping(e.target.checked)}
+                          className="w-4 h-4 rounded border-border"
+                        />
+                        <Label htmlFor="sameAsShipping" className="cursor-pointer">Billing address same as shipping</Label>
+                      </div>
+
+                      {/* Billing Address */}
+                      {!sameAsShipping && (
+                        <div className="space-y-3">
+                          <h3 className="font-medium">Billing Address</h3>
+                          <div className="grid gap-3">
+                            {addresses.filter(addr => addr.type === 'billing').map((addr) => (
+                              <div
+                                key={addr.id}
+                                onClick={() => setSelectedBillingId(addr.id)}
+                                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                                  selectedBillingId === addr.id
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-border hover:border-primary/50'
+                                }`}
+                              >
+                                <p className="font-medium">{addr.firstName} {addr.lastName}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {addr.address1}{addr.address2 && `, ${addr.address2}`}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {addr.city}, {addr.state} {addr.zipCode}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowNewAddressForm(true)}
+                        className="w-full"
+                      >
+                        + Add New Address
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* New Address Form */}
+                  {(showNewAddressForm || !Array.isArray(addresses) || addresses.length === 0) && (
+                    <form onSubmit={handleShippingSubmit} className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
@@ -219,58 +338,33 @@ export default function Checkout() {
                         <Input id="postalCode" name="postalCode" value={shippingData.postalCode} onChange={handleShippingChange} required className="bg-card border-border/50" />
                       </div>
                     </div>
-                    <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 mt-6">Continue to Payment</Button>
-                  </form>
-                </motion.div>
-              )}
-
-              {/* Payment Form */}
-              {step === 'payment' && (
-                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                  <h2 className="text-2xl font-display font-semibold mb-6">Payment Method</h2>
-                  <form onSubmit={handlePaymentSubmit}>
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-                      {[
-                        { value: 'card', label: 'Credit/Debit Card', icon: CreditCard },
-                        { value: 'upi', label: 'UPI Payment', icon: Shield },
-                        { value: 'cod', label: 'Cash on Delivery', icon: Truck },
-                      ].map((method) => (
-                        <div key={method.value} className={`flex items-center space-x-4 p-4 rounded-xl border transition-colors cursor-pointer ${paymentMethod === method.value ? 'border-primary bg-primary/5' : 'border-border/50 bg-card'}`}>
-                          <RadioGroupItem value={method.value} id={method.value} />
-                          <Label htmlFor={method.value} className="flex items-center gap-3 cursor-pointer flex-1">
-                            <method.icon className="h-5 w-5 text-foreground/60" />
-                            {method.label}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-
-                    {paymentMethod === 'card' && (
-                      <div className="mt-6 space-y-4 p-4 bg-card rounded-xl border border-border/50">
-                        <div className="space-y-2">
-                          <Label htmlFor="cardNumber">Card Number</Label>
-                          <Input id="cardNumber" placeholder="1234 5678 9012 3456" className="bg-background border-border/50" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="expiry">Expiry Date</Label>
-                            <Input id="expiry" placeholder="MM/YY" className="bg-background border-border/50" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input id="cvv" placeholder="123" className="bg-background border-border/50" />
-                          </div>
-                        </div>
-                      </div>
+                    <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 mt-6">Review Order</Button>
+                    {showNewAddressForm && Array.isArray(addresses) && addresses.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowNewAddressForm(false)}
+                        className="w-full h-12 mt-2"
+                      >
+                        Cancel
+                      </Button>
                     )}
-
-                    <div className="flex gap-4 mt-6">
-                      <Button type="button" variant="outline" onClick={() => setStep('shipping')} className="flex-1 h-12 border-border/50">Back</Button>
-                      <Button type="submit" className="flex-1 h-12 bg-primary hover:bg-primary/90">Review Order</Button>
-                    </div>
                   </form>
+                  )}
+
+                  {/* Continue button for saved address */}
+                  {!showNewAddressForm && selectedShippingId && (sameAsShipping || selectedBillingId) && (
+                    <Button
+                      onClick={() => setStep('review')}
+                      className="w-full h-12 bg-primary hover:bg-primary/90 mt-6"
+                    >
+                      Review Order
+                    </Button>
+                  )}
                 </motion.div>
               )}
+
+
 
               {/* Review */}
               {step === 'review' && (
@@ -288,9 +382,23 @@ export default function Checkout() {
                     </div>
 
                     <div className="p-4 bg-card rounded-xl border border-border/50">
-                      <h3 className="font-medium mb-3">Payment Method</h3>
-                      <p className="text-foreground/60 text-sm capitalize">{paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod === 'upi' ? 'UPI Payment' : 'Credit/Debit Card'}</p>
+                      <h3 className="font-medium mb-3">Billing Address</h3>
+                      <p className="text-foreground/60 text-sm">
+                        {sameAsShipping ? (
+                          'Same as shipping address'
+                        ) : (
+                          addresses.find(a => a.id === selectedBillingId) ? (
+                            <>
+                              {addresses.find(a => a.id === selectedBillingId)?.firstName} {addresses.find(a => a.id === selectedBillingId)?.lastName}<br />
+                              {addresses.find(a => a.id === selectedBillingId)?.address1}{addresses.find(a => a.id === selectedBillingId)?.address2 && `, ${addresses.find(a => a.id === selectedBillingId)?.address2}`}<br />
+                              {addresses.find(a => a.id === selectedBillingId)?.city}, {addresses.find(a => a.id === selectedBillingId)?.state} {addresses.find(a => a.id === selectedBillingId)?.zipCode}
+                            </>
+                          ) : 'Not selected'
+                        )}
+                      </p>
                     </div>
+
+
 
                     <div className="p-4 bg-card rounded-xl border border-border/50">
                       <h3 className="font-medium mb-3">Order Items ({cart.items.length})</h3>
@@ -310,7 +418,7 @@ export default function Checkout() {
                   </div>
 
                   <div className="flex gap-4 mt-6">
-                    <Button type="button" variant="outline" onClick={() => setStep('payment')} className="flex-1 h-12 border-border/50">Back</Button>
+                    <Button type="button" variant="outline" onClick={() => setStep('shipping')} className="flex-1 h-12 border-border/50">Back</Button>
                     <Button onClick={handlePlaceOrder} disabled={isProcessing} className="flex-1 h-12 bg-primary hover:bg-primary/90">
                       {isProcessing ? 'Processing...' : 'Place Order'}
                     </Button>
@@ -326,20 +434,20 @@ export default function Checkout() {
                 <div className="space-y-3 pb-4 border-b border-border/50">
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Subtotal ({cart.items.length} items)</span>
-                    <span>${subtotal.toLocaleString()}</span>
+                    <span>{formatUSD(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                    <span>{shipping === 0 ? 'Free' : formatUSD(shipping)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-foreground/60">Tax (18% GST)</span>
-                    <span>${tax.toLocaleString()}</span>
+                    <span className="text-foreground/60">Tax ({(taxRate * 100).toFixed(2)}%)</span>
+                    <span>{formatUSD(tax)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between pt-4 text-lg font-semibold">
                   <span>Total</span>
-                  <span className="text-primary">${total.toLocaleString()}</span>
+                  <span className="text-primary">{formatUSD(total)}</span>
                 </div>
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground/60">

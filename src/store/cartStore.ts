@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { customerApi } from '@/services/customerApi';
+import { calculateCartTotals } from '@/lib/usUtils';
 import type { Cart, CartItem, Product, ProductVariant } from '@/types/api';
 
 interface BackendCartItem {
@@ -86,11 +87,7 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
   }));
   
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-  const tax = subtotal * 0.0975;
-  const shipping = subtotal >= 1000 ? 0 : 30;
-  const total = subtotal + tax + shipping;
-  
-  console.log('Cart calculation:', { subtotal, tax, shipping, total, threshold: 1000, isFreeShipping: subtotal >= 1000 });
+  const { tax, shipping, total } = calculateCartTotals(subtotal);
   
   return {
     id: 'backend-cart',
@@ -168,9 +165,7 @@ export const useCartStore = create<CartStore>()(
         }
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const tax = subtotal * 0.0975;
-        const shipping = subtotal >= 1000 ? 0 : 30;
-        const total = subtotal + tax + shipping;
+        const { tax, shipping, total } = calculateCartTotals(subtotal);
 
         set({
           cart: {
@@ -212,9 +207,7 @@ export const useCartStore = create<CartStore>()(
         );
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const tax = subtotal * 0.0975;
-        const shipping = subtotal >= 1000 ? 0 : 30;
-        const total = subtotal + tax + shipping;
+        const { tax, shipping, total } = calculateCartTotals(subtotal);
 
         set({
           cart: {
@@ -244,9 +237,7 @@ export const useCartStore = create<CartStore>()(
         const updatedItems = currentCart.items.filter(item => item.id !== itemId);
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const tax = subtotal * 0.0975;
-        const shipping = subtotal >= 1000 ? 0 : 30;
-        const total = subtotal + tax + shipping;
+        const { tax, shipping, total } = calculateCartTotals(subtotal);
 
         set({
           cart: {

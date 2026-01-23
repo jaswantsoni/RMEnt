@@ -176,7 +176,7 @@ export function CartDrawer() {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Sale Tax (9.75%)</span>
+                      <span className="text-muted-foreground">VAT Tax (9.75%)</span>
                       <span>{formatPrice(cart?.tax || 0)}</span>
                     </div>
                     <Separator className="my-2" />
