@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Search, ShoppingBag, User, Heart, Settings, ChevronDown } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, User, Heart, Settings, ChevronDown, Package } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useUserStore } from '@/store/userStore';
@@ -207,10 +207,20 @@ export function Header() {
                   <User className="h-5 w-5" />
                 )}
               </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
+                  onClick={() => navigate('/orders')}
+                >
+                  <Package className="h-5 w-5" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-foreground/70 hover:scale-110 hover:text-gold transition-transform duration-600 ease-out"
+                className="relative text-foreground/70 hover:text-gold transition-colors"
                 onClick={openCart}
                 >
                 <ShoppingBag className="h-5 w-5" />
@@ -367,17 +377,30 @@ export function Header() {
                     Wishlist ({wishlistItems.length})
                   </Button>
                   {isAuthenticated && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-3"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        navigate('/admin');
-                      }}
-                    >
-                      <Settings className="h-5 w-5" />
-                      Admin Panel
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          navigate('/orders');
+                        }}
+                      >
+                        <Package className="h-5 w-5" />
+                        Orders
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          setIsMobileMenuOpen(false);
+                          navigate('/admin');
+                        }}
+                      >
+                        <Settings className="h-5 w-5" />
+                        Admin Panel
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

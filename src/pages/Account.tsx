@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { User, Mail, Phone, MapPin, Calendar, LogOut, Edit2, Plus } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { CartDrawer } from '@/components/cart/CartDrawer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -140,6 +141,7 @@ export default function Account() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <CartDrawer />
       
       <main className="pt-32 pb-16">
         <div className="container mx-auto px-4 lg:px-8">
@@ -276,7 +278,7 @@ export default function Account() {
                     />
                   )
                 ) : (
-                  <div className="space-y-4">
+                  <div className="max-h-[400px] overflow-y-auto space-y-4">
                     {Array.isArray(user?.addresses) && user.addresses.length > 0 ? (
                       user.addresses.map((address: any) => (
                         <div key={address.id} className="p-4 border rounded-lg">

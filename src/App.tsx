@@ -23,6 +23,7 @@ const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Search = lazy(() => import("./pages/Search"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const Orders = lazy(() => import("./pages/Orders"));
 const Account = lazy(() => import("./pages/Account"));
 const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
             <Route path="/search" element={<Search />} />
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/account/:tab" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/products" element={<Products />} />
