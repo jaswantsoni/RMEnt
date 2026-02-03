@@ -4,6 +4,12 @@ import { customerApi } from '@/services/customerApi';
 import { calculateCartTotals } from '@/lib/usUtils';
 import type { Cart, CartItem, Product, ProductVariant } from '@/types/api';
 
+interface PendingCartItem {
+  product: Product;
+  variant?: ProductVariant;
+  quantity: number;
+}
+
 interface BackendCartItem {
   id: string;
   customer_id: string;
@@ -25,11 +31,14 @@ interface CartStore {
   cart: Cart;
   isOpen: boolean;
   isLoading: boolean;
+  pendingItem: PendingCartItem | null;
   
   setCart: (cart: Cart) => void;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
+  setPendingItem: (item: PendingCartItem | null) => void;
+  processPendingItem: () => Promise<void>;
   
   // API cart operations
   fetchCart: () => Promise<void>;
@@ -107,11 +116,21 @@ export const useCartStore = create<CartStore>()(
       cart: createEmptyCart(),
       isOpen: false,
       isLoading: false,
+      pendingItem: null,
 
       setCart: (cart) => set({ cart: cart || createEmptyCart() }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
+      setPendingItem: (item) => set({ pendingItem: item }),
+      
+      processPendingItem: async () => {
+        const { pendingItem } = get();
+        if (pendingItem) {
+          await get().addItem(pendingItem.product, pendingItem.variant, pendingItem.quantity);
+          set({ pendingItem: null });
+        }
+      },
 
       fetchCart: async () => {
         set({ isLoading: true });
@@ -134,6 +153,23 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: async (product, variant, quantity = 1) => {
+        // Check if user is authenticated
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          // Store pending item and trigger login
+          set({ pendingItem: { product, variant, quantity } });
+          const width = 500;
+          const height = 600;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(
+            `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`,
+            'Google Login',
+            `width=${width},height=${height},left=${left},top=${top}`
+          );
+          return;
+        }
+        
         // Optimistic update - update UI immediately
         const currentCart = get().cart;
         const existingItemIndex = currentCart.items.findIndex(

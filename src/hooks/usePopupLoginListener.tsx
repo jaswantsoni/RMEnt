@@ -1,8 +1,10 @@
 import { useEffect } from "react";
-import { useUserStore } from "@/store/userStore"; // your Zustand/Redux store
+import { useUserStore } from "@/store/userStore";
+import { useCartStore } from "@/store/cartStore";
 
 export const usePopupLoginListener = () => {
   const { login } = useUserStore();
+  const { processPendingItem } = useCartStore();
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -20,6 +22,9 @@ export const usePopupLoginListener = () => {
           if (res.ok) {
             const userData = await res.json();
             login(userData.data || userData, token);
+            
+            // Process pending cart item after successful login
+            await processPendingItem();
           } else {
             console.error("Failed to fetch user data for popup login");
           }
@@ -35,5 +40,5 @@ export const usePopupLoginListener = () => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [login]);
+  }, [login, processPendingItem]);
 };
