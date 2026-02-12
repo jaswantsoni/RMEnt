@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
 
 export const usePopupLoginListener = () => {
   const { login } = useUserStore();
-  const { processPendingItem } = useCartStore();
+  const { processPendingItem, syncGuestCart } = useCartStore();
+  const { syncGuestWishlist } = useWishlistStore();
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
@@ -23,7 +25,9 @@ export const usePopupLoginListener = () => {
             const userData = await res.json();
             login(userData.data || userData, token);
             
-            // Process pending cart item after successful login
+            // Sync guest cart and wishlist, then process pending item
+            await syncGuestCart();
+            await syncGuestWishlist();
             await processPendingItem();
           } else {
             console.error("Failed to fetch user data for popup login");
@@ -40,5 +44,5 @@ export const usePopupLoginListener = () => {
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [login, processPendingItem]);
+  }, [login, processPendingItem, syncGuestCart, syncGuestWishlist]);
 };

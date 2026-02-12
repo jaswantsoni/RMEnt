@@ -12,6 +12,7 @@ interface WishlistState {
   toggleItem: (product: Product) => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   clearWishlist: () => void;
+  syncGuestWishlist: () => Promise<void>;
 }
 
 export const useWishlistStore = create<WishlistState>()(
@@ -21,6 +22,9 @@ export const useWishlistStore = create<WishlistState>()(
       loading: false,
 
       fetchWishlist: async () => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return; // Guest users use localStorage only
+        
         set({ loading: true });
         try {
           const response = await customerApi.getWishlist();
@@ -35,11 +39,21 @@ export const useWishlistStore = create<WishlistState>()(
       },
 
       addItem: async (product) => {
+        const token = localStorage.getItem('auth_token');
+        
         // Check if already in wishlist
         if (get().items.find(item => item.id === product.id)) {
           console.log('Product already in wishlist');
           return;
         }
+        
+        // Guest user - store locally only
+        if (!token) {
+          set((state) => ({ items: [...state.items, product] }));
+          return;
+        }
+        
+        // Authenticated user - sync with backend
         try {
           const response = await customerApi.addToWishlist(product.id);
           console.log('Add to wishlist response:', response);
@@ -53,6 +67,15 @@ export const useWishlistStore = create<WishlistState>()(
       },
 
       removeItem: async (productId) => {
+        const token = localStorage.getItem('auth_token');
+        
+        // Guest user - remove locally only
+        if (!token) {
+          set((state) => ({ items: state.items.filter(item => item.id !== productId) }));
+          return;
+        }
+        
+        // Authenticated user - sync with backend
         try {
           const wishlistItem = get().items.find(item => item.id === productId);
           if (wishlistItem) {
@@ -76,6 +99,25 @@ export const useWishlistStore = create<WishlistState>()(
       },
       isInWishlist: (productId) => get().items.some((item) => item.id === productId),
       clearWishlist: () => set({ items: [] }),
+      
+      syncGuestWishlist: async () => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        
+        const { items } = get();
+        if (!items.length) return;
+        
+        // Sync all guest wishlist items to backend
+        try {
+          for (const product of items) {
+            await customerApi.addToWishlist(product.id);
+          }
+          // Fetch fresh wishlist from backend
+          await get().fetchWishlist();
+        } catch (error) {
+          console.error('Failed to sync guest wishlist:', error);
+        }
+      },
     }),
     {
       name: 'wishlist-storage',

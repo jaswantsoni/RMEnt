@@ -13,20 +13,30 @@ export default function Wishlist() {
   const { addItem } = useCartStore();
   const { toast } = useToast();
 
-  const handleAddToCart = (product: typeof items[0]) => {
-    addItem({
-      id: product.id,
-      product,
-      quantity: 1,
-      price: product.price,
-      total: product.price,
-    } as any);
-    toast({ title: 'Added to cart', description: `${product.name} has been added to your cart.` });
+  const handleAddToCart = async (product: typeof items[0]) => {
+    try {
+      await addItem(product);
+      toast({ title: 'Added to cart', description: `${product.name} has been added to your cart.` });
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to add item to cart', 
+        variant: 'destructive' 
+      });
+    }
   };
 
-  const handleRemove = (productId: string, productName: string) => {
-    removeItem(productId);
-    toast({ title: 'Removed', description: `${productName} has been removed from your wishlist.` });
+  const handleRemove = async (productId: string, productName: string) => {
+    try {
+      await removeItem(productId);
+      toast({ title: 'Removed', description: `${productName} has been removed from your wishlist.` });
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: 'Failed to remove item', 
+        variant: 'destructive' 
+      });
+    }
   };
 
   return (
@@ -92,7 +102,7 @@ export default function Wishlist() {
                     transition={{ delay: index * 0.1 }}
                     className="group bg-card rounded-xl overflow-hidden border border-border/50"
                   >
-                    <Link to={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden">
+                    <Link to={`/product/${product.item_id || product.slug}`} className="block relative aspect-square overflow-hidden">
                       <img
                         src={product.images?.[0]?.url || '/placeholder.svg'}
                         alt={product.name}
@@ -105,7 +115,7 @@ export default function Wishlist() {
                       )}
                     </Link>
                     <div className="p-4">
-                      <Link to={`/product/${product.slug}`}>
+                      <Link to={`/product/${product.item_id || product.slug}`}>
                         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
                           {product.name}
                         </h3>

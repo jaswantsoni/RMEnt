@@ -70,35 +70,34 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
     >
       <div className="relative bg-card rounded-sm overflow-hidden luxury-border hover-lift">
         {/* Image Container with Zoom */}
-        <div
-                  className="block relative aspect-square overflow-hidden"
->
-
-        <Link 
-          to={`/product/${product.item_id}`}
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsZooming(true)}
-          onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
-        >
-          <div ref={imageRef} className="w-full h-full">
-            <img
-              src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
-              alt={product.images?.[0]?.alt || product.name}
-              loading={index < 4 ? "eager" : "lazy"}
-              fetchPriority={index === 0 ? "high" : "auto"}
-              decoding="async"
-              width="400"
-              height="400"
-              className="w-full h-full object-contain transition-transform duration-500 ease-out bg-white"
-              style={{
-                transform: isZooming ? 'scale(1.5)' : 'scale(1)',
-                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-              }}
-            />
-          </div>
+        <div className="relative aspect-square overflow-hidden">
+          <Link 
+            to={`/product/${product.item_id}`}
+            className="block w-full h-full"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsZooming(true)}
+            onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
+          >
+            <div ref={imageRef} className="w-full h-full">
+              <img
+                src={product.images?.[0]?.url || product.image_url || '/placeholder.svg'}
+                alt={product.images?.[0]?.alt || product.name}
+                loading={index < 4 ? "eager" : "lazy"}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                decoding="async"
+                width="400"
+                height="400"
+                className="w-full h-full object-contain transition-transform duration-500 ease-out bg-white"
+                style={{
+                  transform: isZooming ? 'scale(1.5)' : 'scale(1)',
+                  transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                }}
+              />
+            </div>
+          </Link>
           
           {/* Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none z-10">
             {discount > 0 && (
               <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-medium">
                 -{discount}%
@@ -111,13 +110,12 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             )}
           </div>
 
-          {/* Quick Actions */}
-          <div className="absolute top-4 right-4 flex flex-col gap-2">
-            <Button
-              variant="secondary"
-              size="icon"
+          {/* Quick Actions - Outside Link */}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 z-30">
+            <button
               onClick={async (e) => { 
                 e.preventDefault();
+                e.stopPropagation();
                 if (isAddingToWishlist) return;
                 setIsAddingToWishlist(true);
                 try {
@@ -127,18 +125,18 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
                 }
               }}
               className={cn(
-                "h-10 w-10 backdrop-blur-sm transition-all",
+                "h-10 w-10 rounded-md backdrop-blur-sm transition-all flex items-center justify-center border",
                 inWishlist 
                   ? "bg-transparent border-0 opacity-100" 
-                  : "bg-background/90 hover:bg-primary hover:text-primary-foreground opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
+                  : "bg-background/90 hover:bg-primary hover:text-primary-foreground border-border opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0"
               )}
             >
               {isAddingToWishlist ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Heart className={cn("h-5 w-5", inWishlist && "fill-current text-gradient-gold")} style={inWishlist ? { color: '#D4AF37' } : {}} />
+                <Heart className={cn("h-5 w-5", inWishlist && "fill-current")} style={inWishlist ? { color: '#D4AF37' } : {}} />
               )}
-            </Button>
+            </button>
             {inCart && (
               <div className="h-10 w-10 flex items-center justify-center">
                 <ShoppingBag className="h-5 w-5" style={{ color: '#D4AF37' }} />
@@ -146,14 +144,14 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             )}
           </div>
 
-          {/* Add to Cart Overlay */}
-        </Link>
-          <div className="absolute bottom-10 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-10">
-            <Button
+          {/* Add to Cart Button - Outside Link */}
+          <div className="absolute bottom-10 left-0 right-0 p-4 opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-30">
+            <button
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (isAddingToCart) return;
+                const isOutOfStock = product.stockQuantity === 0 || (product.inStock === false);
+                if (isAddingToCart || isOutOfStock) return;
                 setIsAddingToCart(true);
                 try {
                   await addItem(product);
@@ -161,30 +159,39 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
                   setIsAddingToCart(false);
                 }
               }}
-              disabled={!product.inStock}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              className={cn(
+                "w-full px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded transition-colors flex items-center justify-center gap-2",
+                (product.stockQuantity === 0 || product.inStock === false || isAddingToCart) && "opacity-50 cursor-not-allowed"
+              )}
             >
               {isAddingToCart ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Adding...
                 </>
+              ) : (product.stockQuantity === 0 || product.inStock === false) ? (
+                'Out of Stock'
               ) : (
                 <>
-                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  <ShoppingBag className="h-4 w-4" />
                   Add to Cart
                 </>
               )}
-            </Button>
+            </button>
           </div>
-          <div className=" py-1 absolute bottom-0 w-full left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-70 group-hover:translate-y-0 z-10">
-            {/* <EnquiryButton id={product.id}/> */}
+          
+          {/* Enquiry Button - Outside Link */}
+          <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 z-30">
             <button
-        className="px-4 py-2 w-full bg-primary text-white rounded transition-colors cursor-pointer hover:bg-primary-700"
-        onClick={handleEnquiryClick}
-      >
-        Enquiry
-      </button>
+              className="w-full px-4 py-2 bg-white text-primary border border-primary text-white rounded transition-colors hover:bg-primary/90 flex items-center justify-center"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleEnquiryClick();
+              }}
+            >
+              Enquiry
+            </button>
           </div>
         </div>
           

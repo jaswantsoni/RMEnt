@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
@@ -8,6 +10,8 @@ export default function AuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useUserStore();
+  const { syncGuestCart } = useCartStore();
+  const { syncGuestWishlist } = useWishlistStore();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,6 +91,11 @@ export default function AuthCallback() {
             
             if (user.id || user.email) {
               login(user, token);
+              
+              // Sync guest cart and wishlist to backend
+              await syncGuestCart();
+              await syncGuestWishlist();
+              
               toast({
                 title: 'Welcome!',
                 description: 'Successfully signed in with Google',

@@ -39,6 +39,7 @@ interface CartStore {
   toggleCart: () => void;
   setPendingItem: (item: PendingCartItem | null) => void;
   processPendingItem: () => Promise<void>;
+  syncGuestCart: () => Promise<void>;
   
   // API cart operations
   fetchCart: () => Promise<void>;
@@ -132,6 +133,25 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
+      syncGuestCart: async () => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        
+        const { cart } = get();
+        if (!cart.items.length) return;
+        
+        // Sync all guest cart items to backend
+        try {
+          for (const item of cart.items) {
+            await customerApi.addToCart(item.product.id, item.quantity, item.variantId);
+          }
+          // Fetch fresh cart from backend
+          await get().fetchCart();
+        } catch (error) {
+          console.error('Failed to sync guest cart:', error);
+        }
+      },
+
       fetchCart: async () => {
         set({ isLoading: true });
         try {
@@ -156,17 +176,49 @@ export const useCartStore = create<CartStore>()(
         // Check if user is authenticated
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          // Store pending item and trigger login
-          set({ pendingItem: { product, variant, quantity } });
-          const width = 500;
-          const height = 600;
-          const left = window.screen.width / 2 - width / 2;
-          const top = window.screen.height / 2 - height / 2;
-          window.open(
-            `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`,
-            'Google Login',
-            `width=${width},height=${height},left=${left},top=${top}`
+          // Guest user - store in localStorage only
+          const currentCart = get().cart;
+          const existingItemIndex = currentCart.items.findIndex(
+            item => item.productId === product.id && item.variantId === variant?.id
           );
+
+          let updatedItems: CartItem[];
+          if (existingItemIndex >= 0) {
+            updatedItems = [...currentCart.items];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity: updatedItems[existingItemIndex].quantity + quantity,
+              total: updatedItems[existingItemIndex].price * (updatedItems[existingItemIndex].quantity + quantity),
+            };
+          } else {
+            const newItem: CartItem = {
+              id: `local-${Date.now()}`,
+              productId: product.id,
+              product,
+              variantId: variant?.id,
+              variant,
+              quantity,
+              price: product.price,
+              total: product.price * quantity,
+            };
+            updatedItems = [...currentCart.items, newItem];
+          }
+
+          const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
+          const { tax, shipping, total } = calculateCartTotals(subtotal);
+
+          set({
+            cart: {
+              ...currentCart,
+              items: updatedItems,
+              subtotal,
+              tax,
+              shipping,
+              total,
+              itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
+            },
+            isOpen: true,
+          });
           return;
         }
         
