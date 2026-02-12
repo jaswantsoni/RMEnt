@@ -77,17 +77,49 @@ export default function Products() {
     }
   }, [setStoreProducts, sortBy, sortOrder, isScrollLoading]);
 
-  // Infinite scroll with throttling
+  // Save scroll position before navigating
+  useEffect(() => {
+    const saveScrollPosition = () => {
+      sessionStorage.setItem('products_scroll_position', (window.scrollY+window.innerHeight).toString());
+      sessionStorage.setItem('products_page', page.toString());
+    };
+    
+    window.addEventListener('beforeunload', saveScrollPosition);
+    return () => window.removeEventListener('beforeunload', saveScrollPosition);
+  }, [page]);
+
+  // Restore scroll position on mount
+  useEffect(() => {
+    const savedPosition = sessionStorage.getItem('products_scroll_position');
+    
+    if (savedPosition && !loading) {
+      const position = parseInt(savedPosition);
+      
+      // Use requestAnimationFrame for smooth restoration after render
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: position ,
+          behavior: 'instant'
+        });
+        sessionStorage.removeItem('products_scroll_position');
+      });
+    }
+  }, [loading, products.length]);
+
+  // Infinite scroll with preloading (trigger 1000px before bottom)
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 500) {
-        if (!loadingMore && !isScrollLoading && hasMore && page > 0) {
-          setPage(prev => prev + 1);
-        }
+      const scrollPosition = window.innerHeight + document.documentElement.scrollTop;
+      const bottomPosition = document.documentElement.offsetHeight;
+      const distanceFromBottom = bottomPosition - scrollPosition;
+      
+      // Preload when 1000px from bottom
+      if (distanceFromBottom < 1000 && !loadingMore && !isScrollLoading && hasMore && page > 0) {
+        setPage(prev => prev + 1);
       }
     };
 
-    const throttledScroll = throttle(handleScroll, 500);
+    const throttledScroll = throttle(handleScroll, 300);
     window.addEventListener('scroll', throttledScroll);
     return () => window.removeEventListener('scroll', throttledScroll);
   }, [loadingMore, isScrollLoading, hasMore, page]);

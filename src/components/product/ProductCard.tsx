@@ -77,6 +77,9 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsZooming(true)}
             onMouseLeave={() => { setIsZooming(false); setZoomPosition({ x: 50, y: 50 }); }}
+            onClick={() => {
+              sessionStorage.setItem('products_scroll_position', (window.scrollY + window.innerHeight).toString());
+            }}
           >
             <div ref={imageRef} className="w-full h-full">
               <img
@@ -210,7 +213,12 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
             </span>
           </div>
           
-          <Link to={`/product/${product.item_id}`}>
+          <Link 
+            to={`/product/${product.item_id}`}
+            onClick={() => {
+              sessionStorage.setItem('products_scroll_position', (window.scrollY + window.innerHeight).toString());
+            }}
+          >
             <h3 className="font-display text-lg font-medium text-foreground mb-2 line-clamp-1 hover:text-primary transition-colors">
               {product.name}
             </h3>
