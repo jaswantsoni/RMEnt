@@ -13,6 +13,7 @@ import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
 import { formatUSD, calculateCartTotals, getTaxRate } from '@/lib/usUtils';
 import { apiClient } from '@/lib/apiClient';
+import { customerApi } from '@/services/customerApi';
 
 // type CheckoutStep = 'shipping' | 'payment' | 'review';
 type CheckoutStep = 'shipping' | 'review';
@@ -48,8 +49,22 @@ export default function Checkout() {
     setShippingData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleShippingSubmit = (e: React.FormEvent) => {
+  const handleShippingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await customerApi.addAddress({
+      type: 'shipping',
+      firstName: shippingData.firstName,
+      lastName: shippingData.lastName,
+      phone: shippingData.phone,
+      address1: shippingData.address1,
+      address2: shippingData.address2,
+      city: shippingData.city,
+      state: shippingData.state,
+      zipCode: shippingData.postalCode,
+      country: shippingData.country,
+      isDefault: true,
+    });
+    await fetchAddresses();
     setStep('review');
   };
 
