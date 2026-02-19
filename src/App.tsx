@@ -17,6 +17,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 const Collections = lazy(() => import("./pages/Collections"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const About = lazy(() => import("./pages/About"));
+const AboutUs = lazy(() => import("./pages/AboutUs"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/collections" element={<Collections />} />
             <Route path="/collections/:category" element={<Collections />} />
             <Route path="/product/:slug" element={<ProductDetail />} />
+            <Route path="/aboutus" element={<AboutUs />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
