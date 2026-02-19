@@ -62,6 +62,9 @@ export default function AboutUs() {
               <p className="text-muted-foreground leading-relaxed mb-4">
                 We specialize in high-end imported lighting and décor pieces designed to bring sophistication and balance into modern homes. Every product in our collection is carefully selected to meet our standards for quality, finish, and design presence.
               </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                In addition to our curated collection, we also offer custom lighting solutions tailored to specific project requirements, helping clients bring their exact vision to life.
+              </p>
               <p className="text-muted-foreground leading-relaxed">
                 While we focus on premium pieces, we also believe great design should feel accessible, which is why we regularly offer competitive pricing and exclusive promotions.
               </p>
