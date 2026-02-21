@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -28,10 +28,7 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: '#' },
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/azzarohom_ca/' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Youtube', icon: Youtube, href: '#' },
 ];
 
 export function Footer() {
