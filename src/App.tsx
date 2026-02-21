@@ -12,6 +12,8 @@ import Index from "./pages/Index";
 import PopCallback from './pages/PopCallBack';
 import { usePopupLoginListener } from './hooks/usePopupLoginListener';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import ShippingReturns from './pages/ShippingReturns';
+import FAQ from './pages/FAQ';
 
 // Lazy load non-critical pages for code splitting
 const Collections = lazy(() => import("./pages/Collections"));
@@ -81,6 +83,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
             <Route path="/popup-callback" element={<PopCallback />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/shipping" element={<ShippingReturns />} />
+            <Route path="/faq" element={<FAQ />} />
 
           </Routes>
         </Suspense>
