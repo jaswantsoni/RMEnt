@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, Loader2, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -39,6 +41,98 @@ const contactInfo = [
 ];
 
 export default function Contact() {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value
+    }));
+  };
+
+  const handleSubjectChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      subject: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/contact/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSuccess(true);
+        toast({
+          title: 'Message Sent!',
+          description: 'Thank you for contacting us. We\'ll get back to you soon.',
+        });
+        
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+        });
+
+        // Reset success state after 5 seconds
+        setTimeout(() => setIsSuccess(false), 5000);
+      } else {
+        throw new Error(result.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send message. Please try again or email us directly.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -122,22 +216,28 @@ export default function Contact() {
                 <h2 className="text-2xl font-display font-semibold mb-8">
                   Send Us a Message
                 </h2>
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
                       <Input
                         id="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
                         placeholder="John"
                         className="bg-secondary border-border"
+                        required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
                         placeholder="Doe"
                         className="bg-secondary border-border"
+                        required
                       />
                     </div>
                   </div>
@@ -146,8 +246,11 @@ export default function Contact() {
                     <Input
                       id="email"
                       type="email"
+                      value={formData.email}
+                      onChange={handleChange}
                       placeholder="john@example.com"
                       className="bg-secondary border-border"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -155,13 +258,15 @@ export default function Contact() {
                     <Input
                       id="phone"
                       type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
                       placeholder="+1 98765 43210"
                       className="bg-secondary border-border"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Select>
+                    <Select value={formData.subject} onValueChange={handleSubjectChange} required>
                       <SelectTrigger className="bg-secondary border-border">
                         <SelectValue placeholder="Select a subject" />
                       </SelectTrigger>
@@ -179,18 +284,36 @@ export default function Contact() {
                     <Label htmlFor="message">Message</Label>
                     <Textarea
                       id="message"
+                      value={formData.message}
+                      onChange={handleChange}
                       placeholder="How can we help you?"
                       rows={5}
                       className="bg-secondary border-border resize-none"
+                      required
                     />
                   </div>
                   <Button
                     type="submit"
                     size="lg"
+                    disabled={isSubmitting || isSuccess}
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : isSuccess ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Message Sent!
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Send Message
+                      </>
+                    )}
                   </Button>
                 </form>
               </div>

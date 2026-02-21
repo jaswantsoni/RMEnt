@@ -12,6 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/api';
 import { cn } from '@/lib/utils';
+import { 
+  updatePageSEO, 
+  generateProductTitle, 
+  generateProductDescription, 
+  generateProductKeywords,
+  addProductStructuredData 
+} from '@/lib/seo';
+import { extractItemIdFromSlug } from '@/lib/slugify';
 
 
 
@@ -41,9 +49,12 @@ export default function ProductDetail() {
     const loadProduct = async () => {
       if (!slug) return;
       
+      // Extract item ID from SEO-friendly slug
+      const itemId = extractItemIdFromSlug(slug);
+      
       setIsLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${slug}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${itemId}`);
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
@@ -95,6 +106,57 @@ export default function ProductDetail() {
               image_url: apiProduct.image_url,
             };
             setProduct(transformedProduct);
+            
+            // Update SEO meta tags for the product
+            const productTitle = generateProductTitle(
+              apiProduct.name,
+              apiProduct.productCategory?.name || apiProduct.category,
+              'Azzaro Home'
+            );
+            
+            const productDescription = generateProductDescription(
+              apiProduct.name,
+              apiProduct.description || apiProduct.enhanced_description || 'Premium quality product from Azzaro Home',
+              apiProduct.rate,
+              apiProduct.productCategory?.name || apiProduct.category
+            );
+            
+            const productKeywords = generateProductKeywords(
+              apiProduct.name,
+              apiProduct.productCategory?.name || apiProduct.category,
+              apiProduct.productSubcategory?.name,
+              apiProduct.zoho_data?.tags || []
+            );
+            
+            updatePageSEO({
+              title: productTitle,
+              description: productDescription,
+              keywords: productKeywords,
+              image: apiProduct.image_url || 'https://staging.azzarohome.com/og-image.png',
+              url: window.location.href,
+              type: 'product',
+              price: apiProduct.rate,
+              currency: 'USD',
+              availability: apiProduct.stock_on_hand > 0 ? 'in stock' : 'out of stock',
+              brand: 'Azzaro Home',
+              category: apiProduct.productCategory?.name || apiProduct.category,
+            });
+            
+            // Add structured data for Google
+            addProductStructuredData({
+              name: apiProduct.name,
+              description: apiProduct.description || apiProduct.enhanced_description || 'Premium quality product from Azzaro Home',
+              image: apiProduct.image_url || 'https://staging.azzarohome.com/og-image.png',
+              price: apiProduct.rate,
+              currency: 'USD',
+              sku: apiProduct.sku || apiProduct.item_id,
+              brand: 'Azzaro Home',
+              availability: apiProduct.stock_on_hand > 0 ? 'InStock' : 'OutOfStock',
+              category: apiProduct.productCategory?.name || apiProduct.category,
+              rating: 5,
+              reviewCount: 0,
+              url: window.location.href,
+            });
           }
         }
       } catch (error) {

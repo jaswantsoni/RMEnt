@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useCartStore } from '@/store/cartStore';
 import { useToast } from '@/hooks/use-toast';
+import { createFullProductSlug } from '@/lib/slugify';
 
 export default function Wishlist() {
   const { items, removeItem, clearWishlist } = useWishlistStore();
@@ -94,7 +95,14 @@ export default function Wishlist() {
 
               {/* Wishlist Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {items.map((product, index) => (
+                {items.map((product, index) => {
+                  const productSlug = createFullProductSlug(
+                    product.name,
+                    product.sku || product.item_id,
+                    product.item_id
+                  );
+                  
+                  return (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -102,7 +110,7 @@ export default function Wishlist() {
                     transition={{ delay: index * 0.1 }}
                     className="group bg-card rounded-xl overflow-hidden border border-border/50"
                   >
-                    <Link to={`/product/${product.item_id || product.slug}`} className="block relative aspect-square overflow-hidden">
+                    <Link to={`/product/${productSlug}`} className="block relative aspect-square overflow-hidden">
                       <img
                         src={product.images?.[0]?.url || '/placeholder.svg'}
                         alt={product.name}
@@ -115,7 +123,7 @@ export default function Wishlist() {
                       )}
                     </Link>
                     <div className="p-4">
-                      <Link to={`/product/${product.item_id || product.slug}`}>
+                      <Link to={`/product/${productSlug}`}>
                         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
                           {product.name}
                         </h3>
@@ -152,7 +160,8 @@ export default function Wishlist() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                );
+                })}
               </div>
             </>
           )}

@@ -8,6 +8,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EnquiryButton } from '../ui/enquiryButton';
+import { createFullProductSlug } from '@/lib/slugify';
 
 interface ProductCardProps {
   product: Product;
@@ -29,6 +30,13 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
   
   // Calculate available quantity
   const availableQuantity = getAvailableQuantity(product.id, product.stockQuantity);
+  
+  // Create SEO-friendly URL slug
+  const productSlug = createFullProductSlug(
+    product.name,
+    product.sku || product.item_id,
+    product.item_id
+  );
   
   useEffect(() => {
     fetchWishlist();
@@ -75,7 +83,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
         {/* Image Container with Zoom */}
         <div className="relative aspect-square overflow-hidden">
           <Link 
-            to={`/product/${product.item_id}`}
+            to={`/product/${productSlug}`}
             className="block w-full h-full"
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsZooming(true)}
@@ -217,7 +225,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
           </div>
           
           <Link 
-            to={`/product/${product.item_id}`}
+            to={`/product/${productSlug}`}
             onClick={() => {
               sessionStorage.setItem('products_scroll_position', (window.scrollY + window.innerHeight).toString());
             }}

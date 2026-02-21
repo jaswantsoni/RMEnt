@@ -13,6 +13,7 @@ import { useProductStore } from '@/store/productStore';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { usePopupLoginListener } from '@/hooks/usePopupLoginListener';
+import { resetToDefaultSEO } from '@/lib/seo';
 // Products will be loaded from Google Drive
 
 // const categories: Category[] = [
@@ -38,6 +39,11 @@ import { usePopupLoginListener } from '@/hooks/usePopupLoginListener';
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const { setProducts: setStoreProducts } = useProductStore();
   const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    // Reset SEO to default homepage tags
+    resetToDefaultSEO();
+  }, []);
 
   useEffect(() => {
     // Load products from Shopify backend
