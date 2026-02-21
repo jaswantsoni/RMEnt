@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 
 export default function ProductDetail() {
   const { slug } = useParams();
-  const { addItem } = useCartStore();
+  const { addItem, getCartQuantity, getAvailableQuantity } = useCartStore();
   const { toggleItem, isInWishlist, fetchWishlist } = useWishlistStore();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
@@ -449,13 +449,31 @@ export default function ProductDetail() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setQuantity(quantity + 1)}
+                      onClick={() => {
+                        const totalStock = selectedVariant?.inventory || product.stockQuantity;
+                        const available = getAvailableQuantity(product.id, totalStock, selectedVariant?.id);
+                        setQuantity(Math.min(quantity + 1, available));
+                      }}
+                      disabled={(() => {
+                        const totalStock = selectedVariant?.inventory || product.stockQuantity;
+                        const available = getAvailableQuantity(product.id, totalStock, selectedVariant?.id);
+                        return quantity >= available;
+                      })()}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {selectedVariant?.inventory || product.stockQuantity} in stock
+                    {(() => {
+                      const totalStock = selectedVariant?.inventory || product.stockQuantity;
+                      const cartQty = getCartQuantity(product.id, selectedVariant?.id);
+                      const available = getAvailableQuantity(product.id, totalStock, selectedVariant?.id);
+                      return (
+                        <>
+                          {available} available {cartQty > 0 && `(${cartQty} in cart)`}
+                        </>
+                      );
+                    })()}
                   </span>
                 </div>
               </div>
@@ -476,7 +494,11 @@ export default function ProductDetail() {
                       setIsAddingToCart(false);
                     }
                   }}
-                  disabled={!selectedVariant?.inventory && !product.inStock}
+                  disabled={(() => {
+                    const totalStock = selectedVariant?.inventory || product.stockQuantity;
+                    const available = getAvailableQuantity(product.id, totalStock, selectedVariant?.id);
+                    return available === 0;
+                  })()}
                 >
                   {isAddingToCart ? (
                     <>

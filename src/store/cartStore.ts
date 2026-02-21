@@ -41,6 +41,11 @@ interface CartStore {
   processPendingItem: () => Promise<void>;
   syncGuestCart: () => Promise<void>;
   
+  // Helper to get quantity in cart for a product
+  getCartQuantity: (productId: string, variantId?: string) => number;
+  // Helper to get available quantity (stock - cart quantity)
+  getAvailableQuantity: (productId: string, stockQuantity: number, variantId?: string) => number;
+  
   // API cart operations
   fetchCart: () => Promise<void>;
   addItem: (product: Product, variant?: ProductVariant, quantity?: number) => Promise<void>;
@@ -124,6 +129,21 @@ export const useCartStore = create<CartStore>()(
       closeCart: () => set({ isOpen: false }),
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
       setPendingItem: (item) => set({ pendingItem: item }),
+      
+      // Get quantity already in cart for a product
+      getCartQuantity: (productId, variantId) => {
+        const { cart } = get();
+        const cartItem = cart.items.find(
+          item => item.productId === productId && item.variantId === variantId
+        );
+        return cartItem ? cartItem.quantity : 0;
+      },
+      
+      // Get available quantity (total stock - quantity in cart)
+      getAvailableQuantity: (productId, stockQuantity, variantId) => {
+        const cartQuantity = get().getCartQuantity(productId, variantId);
+        return Math.max(0, stockQuantity - cartQuantity);
+      },
       
       processPendingItem: async () => {
         const { pendingItem } = get();

@@ -15,7 +15,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard = memo(function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const { addItem, cart } = useCartStore();
+  const { addItem, cart, getAvailableQuantity } = useCartStore();
   const { toggleItem, isInWishlist, fetchWishlist } = useWishlistStore();
   const inWishlist = isInWishlist(product.id);
   const inCart = cart?.items?.some(item => item.productId === product.id || item.product?.id === product.id);
@@ -26,6 +26,9 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
     // Open enquiry modal logic here
     setformVisible(true);
   }
+  
+  // Calculate available quantity
+  const availableQuantity = getAvailableQuantity(product.id, product.stockQuantity);
   
   useEffect(() => {
     fetchWishlist();
@@ -153,7 +156,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const isOutOfStock = product.stockQuantity === 0 || (product.inStock === false);
+                const isOutOfStock = availableQuantity === 0;
                 if (isAddingToCart || isOutOfStock) return;
                 setIsAddingToCart(true);
                 try {
@@ -164,7 +167,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
               }}
               className={cn(
                 "w-full px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded transition-colors flex items-center justify-center gap-2",
-                (product.stockQuantity === 0 || product.inStock === false || isAddingToCart) && "opacity-50 cursor-not-allowed"
+                (availableQuantity === 0 || isAddingToCart) && "opacity-50 cursor-not-allowed"
               )}
             >
               {isAddingToCart ? (
@@ -172,7 +175,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Adding...
                 </>
-              ) : (product.stockQuantity === 0 || product.inStock === false) ? (
+              ) : (availableQuantity === 0) ? (
                 'Out of Stock'
               ) : (
                 <>
