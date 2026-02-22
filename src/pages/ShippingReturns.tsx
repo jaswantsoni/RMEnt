@@ -1,9 +1,15 @@
+import { useEffect } from 'react';
 import { Package, Truck, RefreshCw, AlertCircle, Clock, Shield, DollarSign, MapPin, Phone, Mail, CheckCircle, XCircle, FileText, Calendar, Globe } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 
 const ShippingReturns = () => {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <Header />

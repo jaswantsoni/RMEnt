@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, Search, Package, CreditCard, Truck, RefreshCw, Lightbulb, Wrench, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Header } from '@/components/layout/Header';
@@ -246,6 +246,11 @@ const faqCategories: FAQCategory[] = [
 const FAQ = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Filter FAQs based on search query
   const filteredCategories = faqCategories.map(category => ({

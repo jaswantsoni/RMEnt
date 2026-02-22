@@ -33,6 +33,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const ManualUpload = lazy(() => import("./pages/ManualUpload"));
 const Products = lazy(() => import("./pages/Products"));
 const ShopifyProducts = lazy(() => import("./pages/ShopifyProducts"));
+const NewsletterThankYou = lazy(() => import("./pages/NewsletterThankYou"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/shipping" element={<ShippingReturns />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/newsletter-thank-you" element={<NewsletterThankYou />} />
 
           </Routes>
         </Suspense>
