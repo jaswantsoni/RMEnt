@@ -78,11 +78,14 @@ export function Header() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-12 lg:h-20">
             {/* Logo */}
-            <Link to="/" className="flex-shrink-0">
-              <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-widest">
-                <span className="text-gradient-gold">ekart24</span>
-              </h1>
-              <p className="text-[10px] tracking-[0.3em] text-muted-foreground uppercase -mt-1">ekart24.com</p>
+            <Link to="/" className="flex-shrink-0 flex items-center gap-3">
+              <img src="/rmp-logo.png" alt="RMP Logo" className="h-12 w-12 object-contain" loading="eager" />
+              <div>
+                <h1 className="text-xl font-display font-semibold tracking-widest leading-none">
+                  <span className="text-gradient-gold">RMP</span>
+                </h1>
+                <p className="text-[9px] tracking-[0.2em] text-muted-foreground uppercase">Jewels & Women Clothing</p>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}

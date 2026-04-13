@@ -71,7 +71,7 @@ export function Footer() {
         <div className="container mx-auto px-4 lg:px-8 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <h3 className="text-3xl font-display font-semibold mb-4">
-              Join the <span className="text-gradient-gold">ekart24</span> Circle
+              Join the <span className="text-gradient-gold">RMP</span> Circle
             </h3>
             <p className="text-muted-foreground mb-8">
               Subscribe for exclusive offers, new arrivals, and style inspiration delivered to your inbox.
@@ -99,11 +99,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link to="/" className="inline-block mb-6">
-              <h2 className="text-2xl md:text-3xl font-display font-semibold tracking-widest">
-                <span className="text-gradient-gold">ekart24</span>
-              </h2>
-              <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase mt-1">ekart24.com</p>
+            <Link to="/" className="inline-flex items-center gap-3 mb-6">
+              <img src="/rmp-logo.png" alt="RMP Logo" className="h-14 w-14 object-contain" />
+              <div>
+                <h2 className="text-xl font-display font-semibold tracking-widest leading-none">
+                  <span className="text-gradient-gold">RMP</span>
+                </h2>
+                <p className="text-[9px] tracking-[0.2em] text-muted-foreground uppercase mt-0.5">Jewels & Women Clothing</p>
+              </div>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm">
               Premium clothing and exquisite jewellery — curated for the discerning individual.
@@ -166,7 +169,7 @@ export function Footer() {
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} ekart24. All rights reserved.
+              © {new Date().getFullYear()} RMP Jewels & Women Clothing. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               {socialLinks.map((social) => (
