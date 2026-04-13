@@ -85,9 +85,17 @@ export function transformProduct(p: any): Product {
     price: sellingPrice,
     compareAtPrice: originalPrice,
     currency: 'INR',
-    images: p.image_url
-      ? [{ id: '1', url: p.image_url, alt: p.name, position: 0 }]
-      : (p.images || []),
+    images: (() => {
+      // Use images array if available (multi-image support)
+      const imgs: any[] = (p.images as any[]) || [];
+      if (imgs.length > 0) {
+        return imgs
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .map((img, i) => ({ id: String(i), url: img.url, alt: p.name, position: i }));
+      }
+      // Fall back to single image_url
+      return p.image_url ? [{ id: '1', url: p.image_url, alt: p.name, position: 0 }] : [];
+    })(),
     category: findCategoryFromCache(p),
     subcategory: findSubcategoryFromCache(p),
     categoryId: p.productCategory?.id || p.category_id || '',
