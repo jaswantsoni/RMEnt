@@ -1,7 +1,11 @@
 /**
- * SEO Utility Functions
- * Dynamically updates page title, meta tags, and Open Graph tags for better SEO
+ * SEO Utility — RMP Jewels & Women Clothing
+ * Handles dynamic title, meta, Open Graph, Twitter Card, JSON-LD
  */
+
+const BRAND = 'RMP Jewels & Women Clothing';
+const DOMAIN = 'https://ekart24.com';
+const DEFAULT_IMAGE = `${DOMAIN}/rmp-logo.png`;
 
 interface SEOConfig {
   title: string;
@@ -17,158 +21,86 @@ interface SEOConfig {
   category?: string;
 }
 
-/**
- * Update page title and meta tags for SEO
- */
+// ── Core helper ───────────────────────────────────────────────────────────────
+const setMeta = (selector: string, content: string, attr: 'name' | 'property' = 'name') => {
+  let el = document.querySelector(selector) as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    const key = selector.match(/\[(?:name|property)="([^"]+)"\]/)?.[1] || '';
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', content);
+};
+
+const setCanonical = (url: string) => {
+  let el = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
+  }
+  el.href = url;
+};
+
+// ── Main update function ──────────────────────────────────────────────────────
 export const updatePageSEO = (config: SEOConfig) => {
   const {
     title,
     description,
     keywords,
-    image = 'https://staging.azzarohome.com/og-image.png',
+    image = DEFAULT_IMAGE,
     url = window.location.href,
     type = 'website',
     price,
-    currency = 'USD',
+    currency = 'INR',
     availability,
-    brand = 'Azzaro Home',
+    brand = BRAND,
     category,
   } = config;
 
-  // Update page title
   document.title = title;
 
-  // Helper function to update or create meta tag
-  const updateMetaTag = (selector: string, content: string, attribute: 'name' | 'property' = 'name') => {
-    let element = document.querySelector(selector);
-    if (!element) {
-      element = document.createElement('meta');
-      element.setAttribute(attribute, selector.replace(/meta\[name="|meta\[property="|"\]/g, ''));
-      document.head.appendChild(element);
-    }
-    element.setAttribute('content', content);
-  };
+  // Standard
+  setMeta('meta[name="description"]', description);
+  setMeta('meta[name="author"]', brand);
+  if (keywords) setMeta('meta[name="keywords"]', keywords);
+  setCanonical(url);
 
-  // Update standard meta tags
-  updateMetaTag('meta[name="description"]', description);
-  if (keywords) {
-    updateMetaTag('meta[name="keywords"]', keywords);
-  }
+  // Open Graph
+  setMeta('meta[property="og:title"]', title, 'property');
+  setMeta('meta[property="og:description"]', description, 'property');
+  setMeta('meta[property="og:image"]', image, 'property');
+  setMeta('meta[property="og:url"]', url, 'property');
+  setMeta('meta[property="og:type"]', type, 'property');
+  setMeta('meta[property="og:site_name"]', brand, 'property');
 
-  // Update canonical URL
-  let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-  if (!canonical) {
-    canonical = document.createElement('link');
-    canonical.rel = 'canonical';
-    document.head.appendChild(canonical);
-  }
-  canonical.href = url;
+  // Twitter
+  setMeta('meta[name="twitter:card"]', 'summary_large_image');
+  setMeta('meta[name="twitter:title"]', title);
+  setMeta('meta[name="twitter:description"]', description);
+  setMeta('meta[name="twitter:image"]', image);
+  setMeta('meta[name="twitter:site"]', '@rmpjewels');
 
-  // Update Open Graph tags
-  updateMetaTag('meta[property="og:title"]', title, 'property');
-  updateMetaTag('meta[property="og:description"]', description, 'property');
-  updateMetaTag('meta[property="og:image"]', image, 'property');
-  updateMetaTag('meta[property="og:url"]', url, 'property');
-  updateMetaTag('meta[property="og:type"]', type, 'property');
-  updateMetaTag('meta[property="og:site_name"]', brand, 'property');
-
-  // Update Twitter Card tags
-  updateMetaTag('meta[name="twitter:card"]', 'summary_large_image');
-  updateMetaTag('meta[name="twitter:title"]', title);
-  updateMetaTag('meta[name="twitter:description"]', description);
-  updateMetaTag('meta[name="twitter:image"]', image);
-
-  // Product-specific meta tags (Schema.org)
+  // Product-specific
   if (type === 'product' && price) {
-    updateMetaTag('meta[property="product:price:amount"]', price.toString(), 'property');
-    updateMetaTag('meta[property="product:price:currency"]', currency, 'property');
-    
-    if (availability) {
-      updateMetaTag('meta[property="product:availability"]', availability, 'property');
-    }
-    
-    if (brand) {
-      updateMetaTag('meta[property="product:brand"]', brand, 'property');
-    }
-    
-    if (category) {
-      updateMetaTag('meta[property="product:category"]', category, 'property');
-    }
+    setMeta('meta[property="product:price:amount"]', price.toString(), 'property');
+    setMeta('meta[property="product:price:currency"]', currency, 'property');
+    if (availability) setMeta('meta[property="product:availability"]', availability, 'property');
+    if (brand) setMeta('meta[property="product:brand"]', brand, 'property');
+    if (category) setMeta('meta[property="product:category"]', category, 'property');
   }
 };
 
-/**
- * Generate SEO-friendly product title
- */
-export const generateProductTitle = (productName: string, category?: string, brand: string = 'Azzaro Home'): string => {
-  const parts = [productName];
-  
-  if (category) {
-    parts.push(category);
-  }
-  
-  parts.push(brand);
-  
-  return parts.join(' | ');
+// ── JSON-LD helpers ───────────────────────────────────────────────────────────
+const setJsonLd = (data: object) => {
+  document.querySelectorAll('script[type="application/ld+json"]').forEach(s => s.remove());
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.text = JSON.stringify(data);
+  document.head.appendChild(script);
 };
 
-/**
- * Generate SEO-friendly product description
- */
-export const generateProductDescription = (
-  productName: string,
-  description: string,
-  price: number,
-  category?: string
-): string => {
-  const shortDesc = description.length > 155 
-    ? description.substring(0, 152) + '...' 
-    : description;
-  
-  const parts = [`Buy ${productName}`];
-  
-  if (category) {
-    parts.push(`in ${category}`);
-  }
-  
-  parts.push(`at $${price.toFixed(2)}.`);
-  parts.push(shortDesc);
-  
-  return parts.join(' ');
-};
-
-/**
- * Generate keywords from product data
- */
-export const generateProductKeywords = (
-  productName: string,
-  category?: string,
-  subcategory?: string,
-  tags: string[] = []
-): string => {
-  const keywords = [
-    productName,
-    'Azzaro Home',
-    'luxury home decor',
-    'premium lighting',
-  ];
-  
-  if (category) {
-    keywords.push(category);
-  }
-  
-  if (subcategory) {
-    keywords.push(subcategory);
-  }
-  
-  keywords.push(...tags);
-  
-  return keywords.join(', ');
-};
-
-/**
- * Add JSON-LD structured data for products
- */
 export const addProductStructuredData = (product: {
   name: string;
   description: string;
@@ -183,64 +115,184 @@ export const addProductStructuredData = (product: {
   reviewCount?: number;
   url: string;
 }) => {
-  // Remove existing structured data
-  const existingScript = document.querySelector('script[type="application/ld+json"]');
-  if (existingScript) {
-    existingScript.remove();
-  }
-
-  const structuredData = {
+  const data: any = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
     description: product.description,
     image: product.image,
     sku: product.sku,
-    brand: {
-      '@type': 'Brand',
-      name: product.brand,
-    },
+    brand: { '@type': 'Brand', name: product.brand || BRAND },
     offers: {
       '@type': 'Offer',
       url: product.url,
-      priceCurrency: product.currency,
+      priceCurrency: product.currency || 'INR',
       price: product.price,
       availability: `https://schema.org/${product.availability}`,
-      seller: {
-        '@type': 'Organization',
-        name: product.brand,
-      },
+      seller: { '@type': 'Organization', name: BRAND },
     },
   };
-
-  // Add category if available
-  if (product.category) {
-    (structuredData as any).category = product.category;
-  }
-
-  // Add rating if available
+  if (product.category) data.category = product.category;
   if (product.rating && product.reviewCount) {
-    (structuredData as any).aggregateRating = {
+    data.aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: product.rating,
       reviewCount: product.reviewCount,
     };
   }
-
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.text = JSON.stringify(structuredData);
-  document.head.appendChild(script);
+  setJsonLd(data);
 };
 
-/**
- * Reset to default SEO tags (for homepage)
- */
+export const addCollectionStructuredData = (name: string, description: string, url: string) => {
+  setJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name,
+    description,
+    url,
+    isPartOf: { '@type': 'WebSite', name: BRAND, url: DOMAIN },
+  });
+};
+
+// ── Title / description generators ───────────────────────────────────────────
+export const generateProductTitle = (name: string, category?: string): string =>
+  [name, category, BRAND].filter(Boolean).join(' | ');
+
+export const generateProductDescription = (
+  name: string,
+  description: string,
+  price: number,
+  category?: string
+): string => {
+  const short = description.length > 140 ? description.slice(0, 137) + '...' : description;
+  const parts = [`Buy ${name}`];
+  if (category) parts.push(`in ${category}`);
+  parts.push(`at ₹${price.toLocaleString('en-IN')}.`);
+  parts.push(short);
+  return parts.join(' ');
+};
+
+export const generateProductKeywords = (
+  name: string,
+  category?: string,
+  subcategory?: string,
+  tags: string[] = []
+): string => {
+  const base = [
+    name,
+    BRAND,
+    'RMP jewellery',
+    'women clothing India',
+    'premium jewels',
+    'ethnic wear',
+    'designer jewellery',
+  ];
+  if (category) base.push(category);
+  if (subcategory) base.push(subcategory);
+  return [...base, ...tags].join(', ');
+};
+
+export const generateCollectionKeywords = (category?: string): string => {
+  const base = [
+    BRAND,
+    'women clothing',
+    'jewellery online',
+    'ethnic wear',
+    'sarees',
+    'lehengas',
+    'necklaces',
+    'earrings',
+    'bridal jewellery',
+    'ekart24',
+  ];
+  if (category) base.unshift(category);
+  return base.join(', ');
+};
+
+// ── Page-level presets ────────────────────────────────────────────────────────
 export const resetToDefaultSEO = () => {
   updatePageSEO({
-    title: 'Azzaro Home - Premium Home Decor & Luxury Interiors',
-    description: 'Discover premium home decor, luxury lighting, designer fans, and exquisite bath fittings at Azzaro Home. Transform your living space with curated elegance.',
-    keywords: 'luxury home decor, premium lighting, designer ceiling fans, bath fittings, home accessories, interior design',
+    title: 'RMP Jewels & Women Clothing — Premium Fashion & Fine Jewellery',
+    description:
+      'Shop premium women\'s clothing and exquisite jewellery at RMP. Discover sarees, lehengas, kurtas, necklaces, earrings, bridal sets and more. Curated elegance at ekart24.com.',
+    keywords:
+      'RMP jewels, women clothing, jewellery online India, sarees, lehengas, ethnic wear, bridal jewellery, necklaces, earrings, ekart24',
+    image: DEFAULT_IMAGE,
+    url: DOMAIN,
     type: 'website',
+  });
+
+  setJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: BRAND,
+    url: DOMAIN,
+    logo: DEFAULT_IMAGE,
+    sameAs: ['https://www.instagram.com/rmpjewels/'],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      email: 'hello@ekart24.com',
+    },
+  });
+};
+
+export const setCollectionSEO = (categoryName?: string) => {
+  const name = categoryName || 'All Collections';
+  updatePageSEO({
+    title: `${name} — RMP Jewels & Women Clothing`,
+    description: `Browse our ${name.toLowerCase()} collection. Premium quality clothing and jewellery handpicked for the discerning woman.`,
+    keywords: generateCollectionKeywords(categoryName),
+    url: `${DOMAIN}/collections${categoryName ? '/' + categoryName.toLowerCase().replace(/\s+/g, '-') : ''}`,
+    type: 'website',
+  });
+  addCollectionStructuredData(
+    `${name} — RMP`,
+    `Shop ${name.toLowerCase()} at RMP Jewels & Women Clothing`,
+    window.location.href
+  );
+};
+
+export const setProductSEO = (product: {
+  name: string;
+  description: string;
+  image_url?: string;
+  rate?: number;
+  sku?: string;
+  inStock?: boolean;
+  category?: { name: string };
+  subcategory?: { name: string };
+  tags?: string[];
+  item_id?: string;
+}) => {
+  const price = product.rate || 0;
+  const category = product.category?.name;
+  const image = product.image_url || DEFAULT_IMAGE;
+  const url = `${DOMAIN}/product/${product.item_id || ''}`;
+
+  updatePageSEO({
+    title: generateProductTitle(product.name, category),
+    description: generateProductDescription(product.name, product.description, price, category),
+    keywords: generateProductKeywords(product.name, category, product.subcategory?.name, product.tags),
+    image,
+    url,
+    type: 'product',
+    price,
+    currency: 'INR',
+    availability: product.inStock ? 'in stock' : 'out of stock',
+    category,
+  });
+
+  addProductStructuredData({
+    name: product.name,
+    description: product.description,
+    image,
+    price,
+    currency: 'INR',
+    sku: product.sku || product.item_id || '',
+    brand: BRAND,
+    availability: product.inStock ? 'InStock' : 'OutOfStock',
+    category,
+    url,
   });
 };

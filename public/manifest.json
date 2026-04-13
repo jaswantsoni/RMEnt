@@ -1,0 +1,14 @@
+{
+  "name": "RMP Jewels & Women Clothing",
+  "short_name": "RMP",
+  "description": "Premium women's clothing and fine jewellery",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#b08d7a",
+  "icons": [
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/rmp-logo-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/rmp-logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

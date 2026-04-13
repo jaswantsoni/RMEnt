@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -16,8 +17,10 @@ import {
 import {
   Plus, Search, Pencil, Trash2, Loader2, RefreshCw,
   Package, Tag, ShoppingBag, BarChart3, Image as ImageIcon,
-  ChevronRight, ChevronDown, Upload,
+  ChevronRight, ChevronDown, Upload, FileSpreadsheet, Download,
+  CheckCircle2, XCircle, AlertCircle, FileUp,
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { adminProductApi, adminCategoryApi, adminOrderApi } from '@/lib/adminApi';
 import { ProductFormDialog } from '@/components/admin/ProductFormDialog';
 import { CategoryFormDialog } from '@/components/admin/CategoryFormDialog';
@@ -79,6 +82,15 @@ export default function Admin() {
 
   // Image upload state
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+
+  // Import state
+  const [importRows, setImportRows] = useState<any[]>([]);
+  const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const [importDone, setImportDone] = useState(false);
+  const [importStats, setImportStats] = useState({ success: 0, failed: 0 });
+  const importFileRef = useRef<HTMLInputElement>(null);
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -162,6 +174,122 @@ export default function Admin() {
 
   const inStockCount = products.filter(p => (p.stock_on_hand || p.available_stock || 0) > 0).length;
 
+  // ── Import handlers ──────────────────────────────────────────────────────────
+  const REQUIRED_COLS = ['name', 'rate'];
+  const OPTIONAL_COLS = ['sku', 'brand', 'description', 'enhanced_description', 'category', 'status', 'stock_on_hand', 'unit', 'sales_rate', 'specifications'];
+
+  const downloadTemplate = () => {
+    const headers = [...REQUIRED_COLS, ...OPTIONAL_COLS];
+    const sample = [{
+      name: 'Silk Embroidered Saree',
+      rate: 4999,
+      sku: 'SAR-001',
+      brand: 'RMP',
+      description: 'Beautiful silk saree with embroidery',
+      enhanced_description: 'Handcrafted silk saree with intricate embroidery work',
+      category: 'Women',
+      status: 'active',
+      stock_on_hand: 10,
+      unit: 'pcs',
+      sales_rate: '',
+      specifications: 'Material:Silk,Color:Red,Size:Free Size',
+    }];
+    const ws = XLSX.utils.json_to_sheet(sample, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Products');
+    XLSX.writeFile(wb, 'rmp-products-template.xlsx');
+  };
+
+  const parseSpecifications = (raw: string): Record<string, string> => {
+    if (!raw) return {};
+    return raw.split(',').reduce((acc: Record<string, string>, pair: string) => {
+      const [k, v] = pair.split(':');
+      if (k && v) acc[k.trim()] = v.trim();
+      return acc;
+    }, {});
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportDone(false);
+    setImportErrors([]);
+    setImportRows([]);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        let rows: any[] = [];
+        if (file.name.endsWith('.csv')) {
+          const text = ev.target?.result as string;
+          const wb = XLSX.read(text, { type: 'string' });
+          rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        } else {
+          const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+          const wb = XLSX.read(data, { type: 'array' });
+          rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+
+        const errors: string[] = [];
+        const validated = rows.map((row: any, i: number) => {
+          const rowNum = i + 2;
+          if (!row.name) errors.push(`Row ${rowNum}: "name" is required`);
+          if (!row.rate && row.rate !== 0) errors.push(`Row ${rowNum}: "rate" (price) is required`);
+          return {
+            ...row,
+            item_id: `ekart-${Date.now()}-${i}`,
+            rate: parseFloat(row.rate) || 0,
+            sales_rate: row.sales_rate ? parseFloat(row.sales_rate) : undefined,
+            stock_on_hand: parseInt(row.stock_on_hand) || 0,
+            status: row.status || 'active',
+            unit: row.unit || 'pcs',
+            item_type: 'inventory',
+            source: 'import',
+            specifications: row.specifications ? parseSpecifications(String(row.specifications)) : undefined,
+            _valid: !errors.find(e => e.startsWith(`Row ${rowNum}`)),
+          };
+        });
+
+        setImportRows(validated);
+        setImportErrors(errors);
+        toast({ title: `Parsed ${validated.length} rows`, description: errors.length ? `${errors.length} validation issues` : 'All rows valid' });
+      } catch (err: any) {
+        toast({ title: 'Failed to parse file', description: err.message, variant: 'destructive' });
+      }
+    };
+
+    if (file.name.endsWith('.csv')) reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+
+    // reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleImport = async () => {
+    const validRows = importRows.filter(r => r._valid);
+    if (!validRows.length) return;
+    setImporting(true);
+    setImportProgress(0);
+    let success = 0, failed = 0;
+
+    for (let i = 0; i < validRows.length; i++) {
+      try {
+        const { _valid, ...payload } = validRows[i];
+        await adminProductApi.create(payload);
+        success++;
+      } catch {
+        failed++;
+      }
+      setImportProgress(Math.round(((i + 1) / validRows.length) * 100));
+    }
+
+    setImportStats({ success, failed });
+    setImporting(false);
+    setImportDone(true);
+    toast({ title: `Import complete — ${success} added, ${failed} failed` });
+    if (success > 0) loadProducts();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -187,10 +315,11 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsList className="grid w-full grid-cols-4 max-w-xl">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="import">Import</TabsTrigger>
           </TabsList>
 
           {/* ── PRODUCTS TAB ─────────────────────────────────────────────────── */}
@@ -456,6 +585,157 @@ export default function Admin() {
               </Table>
             </Card>
           </TabsContent>
+          {/* ── IMPORT TAB ───────────────────────────────────────────────────── */}
+          <TabsContent value="import" className="space-y-6">
+
+            {/* How it works */}
+            <Card className="p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5 text-primary" /> Bulk Import Products
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4 mb-6 text-sm">
+                {[
+                  { step: '1', title: 'Download Template', desc: 'Get the Excel template with all required columns pre-filled with a sample row.' },
+                  { step: '2', title: 'Fill Your Data', desc: 'Add your products. Required: name, rate. Optional: sku, brand, category, stock, description, specifications.' },
+                  { step: '3', title: 'Upload & Import', desc: 'Upload your filled Excel or CSV file, review the preview, then click Import.' },
+                ].map(s => (
+                  <div key={s.step} className="flex gap-3">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">{s.step}</div>
+                    <div>
+                      <p className="font-medium">{s.title}</p>
+                      <p className="text-muted-foreground text-xs mt-0.5">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Specifications format note */}
+              <div className="bg-muted/50 rounded p-3 text-xs text-muted-foreground mb-6">
+                <span className="font-medium text-foreground">Specifications format:</span> Use comma-separated key:value pairs in the specifications column.
+                <br />Example: <code className="bg-background px-1 rounded">Material:Silk,Color:Red,Size:Free Size</code>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" onClick={downloadTemplate}>
+                  <Download className="h-4 w-4 mr-2" /> Download Excel Template
+                </Button>
+                <Button onClick={() => importFileRef.current?.click()} disabled={importing}>
+                  <FileUp className="h-4 w-4 mr-2" /> Choose File (Excel / CSV)
+                </Button>
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={handleImportFile}
+                />
+              </div>
+            </Card>
+
+            {/* Validation errors */}
+            {importErrors.length > 0 && (
+              <Card className="p-4 border-destructive/40">
+                <div className="flex items-center gap-2 mb-3 text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="font-medium text-sm">{importErrors.length} validation issue{importErrors.length > 1 ? 's' : ''}</span>
+                </div>
+                <ul className="space-y-1">
+                  {importErrors.map((e, i) => (
+                    <li key={i} className="text-xs text-destructive flex items-start gap-1.5">
+                      <XCircle className="h-3 w-3 mt-0.5 flex-shrink-0" /> {e}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {/* Preview table */}
+            {importRows.length > 0 && (
+              <Card>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                  <p className="text-sm font-medium">
+                    Preview — {importRows.length} rows
+                    <span className="text-muted-foreground ml-2">
+                      ({importRows.filter(r => r._valid).length} valid, {importRows.filter(r => !r._valid).length} invalid)
+                    </span>
+                  </p>
+                  {!importDone && (
+                    <Button
+                      size="sm"
+                      onClick={handleImport}
+                      disabled={importing || importRows.filter(r => r._valid).length === 0}
+                    >
+                      {importing
+                        ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Importing...</>
+                        : <><Upload className="h-4 w-4 mr-2" /> Import {importRows.filter(r => r._valid).length} Products</>
+                      }
+                    </Button>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                {importing && (
+                  <div className="px-4 py-3 border-b border-border space-y-1">
+                    <Progress value={importProgress} />
+                    <p className="text-xs text-muted-foreground text-center">{importProgress}% complete</p>
+                  </div>
+                )}
+
+                {/* Done banner */}
+                {importDone && (
+                  <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-green-500/5">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <p className="text-sm">
+                      Import complete — <span className="font-medium text-green-600">{importStats.success} added</span>
+                      {importStats.failed > 0 && <span className="text-destructive ml-1">, {importStats.failed} failed</span>}
+                    </p>
+                    <Button variant="ghost" size="sm" className="ml-auto" onClick={() => { setImportRows([]); setImportDone(false); setImportErrors([]); }}>
+                      Clear
+                    </Button>
+                  </div>
+                )}
+
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8"></TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price (₹)</TableHead>
+                        <TableHead>Stock</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importRows.map((row, i) => (
+                        <TableRow key={i} className={!row._valid ? 'bg-destructive/5' : ''}>
+                          <TableCell>
+                            {row._valid
+                              ? <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              : <XCircle className="h-4 w-4 text-destructive" />
+                            }
+                          </TableCell>
+                          <TableCell className="text-sm font-medium">{row.name || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{row.sku || '—'}</TableCell>
+                          <TableCell className="text-sm">{row.category || '—'}</TableCell>
+                          <TableCell className="text-sm">₹{(row.rate || 0).toLocaleString()}</TableCell>
+                          <TableCell className="text-sm">{row.stock_on_hand ?? 0}</TableCell>
+                          <TableCell>
+                            <Badge variant={row.status === 'active' ? 'default' : 'secondary'} className="text-xs capitalize">
+                              {row.status || 'active'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
         </Tabs>
       </div>
 

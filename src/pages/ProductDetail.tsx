@@ -12,13 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/api';
 import { cn } from '@/lib/utils';
-import { 
-  updatePageSEO, 
-  generateProductTitle, 
-  generateProductDescription, 
-  generateProductKeywords,
-  addProductStructuredData 
-} from '@/lib/seo';
+import { setProductSEO } from '@/lib/seo';
 import { extractItemIdFromSlug } from '@/lib/slugify';
 
 
