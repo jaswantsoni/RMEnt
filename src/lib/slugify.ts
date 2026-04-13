@@ -57,20 +57,21 @@ export const extractSkuFromSlug = (slug: string): string => {
 
 /**
  * Extract item ID from slug
- * The slug format is: product-name-sku-itemid
- * Example: "crystal-chandelier-chan-123-7936722000000146433"
+ * Handles formats:
+ *   - product-name-sku-1234567890  (numeric item_id at end)
+ *   - product-name-sku-ekart-1776079182022  (ekart- prefixed item_id)
  */
 export const extractItemIdFromSlug = (slug: string): string => {
+  // Match ekart-<digits> anywhere at the end
+  const ekartMatch = slug.match(/ekart-(\d+)$/);
+  if (ekartMatch) return `ekart-${ekartMatch[1]}`;
+
+  // Match a long numeric ID at the end (Zoho-style)
   const parts = slug.split('-');
   const lastPart = parts[parts.length - 1];
-  
-  // Item IDs are typically long numeric strings
-  if (/^\d{10,}$/.test(lastPart)) {
-    return lastPart;
-  }
-  
-  // If not found at the end, return the original slug
-  // The backend will handle the lookup
+  if (/^\d{10,}$/.test(lastPart)) return lastPart;
+
+  // Fall back to full slug — backend will handle lookup
   return slug;
 };
 

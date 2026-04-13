@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/api';
 import { cn } from '@/lib/utils';
-import { setProductSEO } from '@/lib/seo';
+import { setProductSEO, updatePageSEO, generateProductTitle, generateProductDescription, generateProductKeywords, addProductStructuredData } from '@/lib/seo';
 import { extractItemIdFromSlug } from '@/lib/slugify';
 
 
@@ -48,6 +48,19 @@ export default function ProductDetail() {
       
       setIsLoading(true);
       try {
+        // Ensure category cache is populated before transforming product
+        const cached = localStorage.getItem('ekart24_categories');
+        if (!cached) {
+          try {
+            const catRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/categories`);
+            if (catRes.ok) {
+              const catData = await catRes.json();
+              const cats = catData.data || catData.categories || [];
+              if (cats.length) localStorage.setItem('ekart24_categories', JSON.stringify(cats));
+            }
+          } catch {}
+        }
+
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/products/${itemId}`);
         if (response.ok) {
           const result = await response.json();
