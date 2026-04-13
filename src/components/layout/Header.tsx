@@ -79,13 +79,10 @@ export function Header() {
           <div className="flex items-center justify-between h-12 lg:h-20">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
-              <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-wider">
-                <span className="text-gradient-gold flex">
-                <img src="/main.svg" width={36} height={32} alt="logo" className='mx-2' loading="eager" decoding="async" />
-                  AZZARO HOME
-                  </span>
-                {/* <span className="text-foreground/80 text-lg md:text-xl ml-1">HOME</span> */}
+              <h1 className="text-2xl md:text-3xl font-display font-semibold tracking-widest">
+                <span className="text-gradient-gold">ekart24</span>
               </h1>
+              <p className="text-[10px] tracking-[0.3em] text-muted-foreground uppercase -mt-1">ekart24.com</p>
             </Link>
 
             {/* Desktop Navigation */}

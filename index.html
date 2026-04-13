@@ -3,60 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
 
     <!-- Preconnect for faster loading -->
     <link rel="preconnect" href="https://d26hjs463edyav.cloudfront.net" crossorigin>
     <link rel="dns-prefetch" href="https://d26hjs463edyav.cloudfront.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <!-- Critical meta tags -->
-    <title>Azzaro Home - Premium Home Decor & Luxury Interiors</title>
-    <meta name="description" content="Discover premium home decor, luxury lighting, designer fans, and exquisite bath fittings at Azzaro Home. Transform your living space with curated elegance." />
-    <meta name="author" content="Azzaro Home" />
+    <title>ekart24 — Premium Clothing & Jewellery</title>
+    <meta name="description" content="Discover premium clothing and exquisite jewellery at ekart24. Curated fashion for the discerning individual." />
+    <meta name="author" content="ekart24" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://azzarohome.com" />
-    
+    <link rel="canonical" href="https://ekart24.com" />
+
     <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="Azzaro Home - Premium Home Decor & Luxury Interiors" />
-    <meta property="og:description" content="Discover premium home decor, luxury lighting, designer fans, and exquisite bath fittings. Transform your living space with curated elegance." />
+    <meta property="og:title" content="ekart24 — Premium Clothing & Jewellery" />
+    <meta property="og:description" content="Discover premium clothing and exquisite jewellery at ekart24. Curated fashion for the discerning individual." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://staging.azzarohome.com/og-image.png" />
-    <meta property="og:url" content="https://azzarohome.com" />
-    <meta property="og:site_name" content="Azzaro Home" />
-    
+    <meta property="og:image" content="https://ekart24.com/og-image.png" />
+    <meta property="og:url" content="https://ekart24.com" />
+    <meta property="og:site_name" content="ekart24" />
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Azzaro Home - Premium Home Decor" />
-    <meta name="twitter:description" content="Discover premium home decor and luxury interiors." />
-    <meta name="twitter:image" content="https://staging.azzarohome.com/og-image.png" />
-    
-    <!-- Performance: Preload critical assets -->
-    <link rel="preload" href="/main.svg" as="image" type="image/png" />
-    
+    <meta name="twitter:title" content="ekart24 — Premium Clothing & Jewellery" />
+    <meta name="twitter:description" content="Discover premium clothing and exquisite jewellery at ekart24." />
+    <meta name="twitter:image" content="https://ekart24.com/og-image.png" />
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    
-    <!-- Theme color for mobile browsers -->
-    <meta name="theme-color" content="#D4AF37" />
-    
-    <!-- Google Analytics - Deferred for performance -->
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#1a1a1a" />
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7G8EBZDLZW"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
+
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-7G8EBZDLZW', { send_page_view: false });
-      // Defer page view until after LCP
-      window.addEventListener('load', () => {
-        setTimeout(() => gtag('event', 'page_view'), 100);
-      });
+      gtag('config', 'G-7G8EBZDLZW');
     </script>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

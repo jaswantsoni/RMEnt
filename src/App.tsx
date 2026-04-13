@@ -32,7 +32,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ManualUpload = lazy(() => import("./pages/ManualUpload"));
 const Products = lazy(() => import("./pages/Products"));
-const ShopifyProducts = lazy(() => import("./pages/ShopifyProducts"));
+// ShopifyProducts removed — using own inventory
 const NewsletterThankYou = lazy(() => import("./pages/NewsletterThankYou"));
 
 // Loading fallback component
@@ -78,7 +78,6 @@ const App = () => (
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/account/:tab" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/products" element={<Products />} />
-            <Route path="/shopify" element={<ShopifyProducts />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/manual-upload" element={<ManualUpload />} />
             <Route path="*" element={<NotFound />} />
