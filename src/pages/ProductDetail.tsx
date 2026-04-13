@@ -53,102 +53,46 @@ export default function ProductDetail() {
           const result = await response.json();
           if (result.success && result.data) {
             const apiProduct = result.data;
-            // Transform API response to match Product interface
-            const transformedProduct = {
-              id: apiProduct.item_id,
-              name: apiProduct.name,
-              slug: apiProduct.item_id,
-              description: apiProduct.description || apiProduct.enhanced_description || '',
-              shortDescription: apiProduct.description || '',
-              price: apiProduct.rate,
-              compareAtPrice: apiProduct.sales_rate !== apiProduct.rate ? apiProduct.sales_rate : undefined,
-              currency: 'USD',
-              images: apiProduct.image_url ? [{ id: '1', url: apiProduct.image_url, alt: apiProduct.name, position: 0 }] : [],
-              category: {
-                id: apiProduct.productCategory?.id || apiProduct.category_id || '1',
-                name: apiProduct.productCategory?.name || apiProduct.category || 'Uncategorized',
-                slug: apiProduct.productCategory?.slug || (apiProduct.productCategory?.name || apiProduct.category || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
-                description: apiProduct.productCategory?.description || '',
-                image: apiProduct.productCategory?.image_url || '',
-                productCount: 0
-              },
-              subcategory: apiProduct.productSubcategory ? {
-                id: apiProduct.productSubcategory.id,
-                name: apiProduct.productSubcategory.name,
-                slug: apiProduct.productSubcategory.slug,
-                description: apiProduct.productSubcategory.description
-              } : undefined,
-              categoryId: '1',
-              variants: [],
-              tags: apiProduct.zoho_data?.tags || [],
-              specifications: apiProduct.specifications ? [
-                { name: 'SKU', value: apiProduct.sku || apiProduct.item_id },
-                ...Object.entries(apiProduct.specifications)
-                  .filter(([name]) => name.toLowerCase() !== 'product name')
-                  .map(([name, value]) => ({ name, value: String(value) }))
-              ] : [{ name: 'SKU', value: apiProduct.sku || apiProduct.item_id }],
-              inStock: apiProduct.stock_on_hand > 0,
-              stockQuantity: apiProduct.stock_on_hand,
-              rating: 5,
-              reviewCount: 0,
-              featured: false,
-              createdAt: apiProduct.created_at,
-              updatedAt: apiProduct.updated_at,
-              sku: apiProduct.sku,
-              rate: apiProduct.rate,
-              item_id: apiProduct.item_id,
-              image_url: apiProduct.image_url,
-            };
+            // Transform using shared transformer for consistency
+            const { transformProduct } = await import('@/lib/productApi');
+            const transformedProduct = transformProduct(apiProduct);
             setProduct(transformedProduct);
             
-            // Update SEO meta tags for the product
-            const productTitle = generateProductTitle(
-              apiProduct.name,
-              apiProduct.productCategory?.name || apiProduct.category,
-              'Azzaro Home'
-            );
-            
-            const productDescription = generateProductDescription(
-              apiProduct.name,
-              apiProduct.description || apiProduct.enhanced_description || 'Premium quality product from Azzaro Home',
-              apiProduct.rate,
-              apiProduct.productCategory?.name || apiProduct.category
-            );
-            
-            const productKeywords = generateProductKeywords(
-              apiProduct.name,
-              apiProduct.productCategory?.name || apiProduct.category,
-              apiProduct.productSubcategory?.name,
-              apiProduct.zoho_data?.tags || []
-            );
-            
+            // Update SEO
             updatePageSEO({
-              title: productTitle,
-              description: productDescription,
-              keywords: productKeywords,
-              image: apiProduct.image_url || 'https://staging.azzarohome.com/og-image.png',
+              title: generateProductTitle(apiProduct.name, transformedProduct.category?.name),
+              description: generateProductDescription(
+                apiProduct.name,
+                apiProduct.description || apiProduct.enhanced_description || '',
+                apiProduct.rate,
+                transformedProduct.category?.name
+              ),
+              keywords: generateProductKeywords(
+                apiProduct.name,
+                transformedProduct.category?.name,
+                transformedProduct.subcategory?.name,
+                []
+              ),
+              image: apiProduct.image_url || '',
               url: window.location.href,
               type: 'product',
-              price: apiProduct.rate,
-              currency: 'USD',
+              price: transformedProduct.price,
+              currency: 'INR',
               availability: apiProduct.stock_on_hand > 0 ? 'in stock' : 'out of stock',
-              brand: 'Azzaro Home',
-              category: apiProduct.productCategory?.name || apiProduct.category,
+              brand: 'RMP',
+              category: transformedProduct.category?.name,
             });
             
-            // Add structured data for Google
             addProductStructuredData({
               name: apiProduct.name,
-              description: apiProduct.description || apiProduct.enhanced_description || 'Premium quality product from Azzaro Home',
-              image: apiProduct.image_url || 'https://staging.azzarohome.com/og-image.png',
-              price: apiProduct.rate,
-              currency: 'USD',
+              description: apiProduct.description || apiProduct.enhanced_description || '',
+              image: apiProduct.image_url || '',
+              price: transformedProduct.price,
+              currency: 'INR',
               sku: apiProduct.sku || apiProduct.item_id,
-              brand: 'Azzaro Home',
+              brand: 'RMP',
               availability: apiProduct.stock_on_hand > 0 ? 'InStock' : 'OutOfStock',
-              category: apiProduct.productCategory?.name || apiProduct.category,
-              rating: 5,
-              reviewCount: 0,
+              category: transformedProduct.category?.name,
               url: window.location.href,
             });
           }
@@ -253,10 +197,11 @@ export default function ProductDetail() {
   }, [product]);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
@@ -301,7 +246,7 @@ export default function ProductDetail() {
   }
 
   const currentPrice = selectedVariant?.price || product.price;
-  const discount = product.compareAtPrice
+  const discount = product.compareAtPrice && product.compareAtPrice > currentPrice
     ? Math.round(((product.compareAtPrice - currentPrice) / product.compareAtPrice) * 100)
     : 0;
 

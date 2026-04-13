@@ -55,15 +55,16 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
     setZoomPosition({ x, y });
   };
 
-  const discount = product.compareAtPrice
+  const discount = product.compareAtPrice && product.compareAtPrice > product.price
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0;
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
@@ -258,9 +259,9 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
           {/* Price */}
           <div className="flex items-center gap-2">
             <span className="text-lg font-semibold text-foreground">
-              {formatPrice(product.rate || product.price || 0)}
+              {formatPrice(product.price)}
             </span>
-            {product.compareAtPrice && (
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
               <span className="text-sm text-muted-foreground line-through">
                 {formatPrice(product.compareAtPrice)}
               </span>

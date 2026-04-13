@@ -2,50 +2,109 @@ import type { Product } from '@/types/api';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
-function transformProduct(p: any): Product {
+// Categories cache — populated from API response
+let _categoriesCache: any[] = [];
+
+function findCategoryFromCache(product: any) {
+  if (!_categoriesCache.length) {
+    try {
+      const stored = localStorage.getItem('ekart24_categories');
+      if (stored) _categoriesCache = JSON.parse(stored);
+    } catch {}
+  }
+
+  // Try productCategory relation first (populated by backend join)
+  if (product.productCategory) {
+    return {
+      id: product.productCategory.id,
+      name: product.productCategory.name,
+      slug: product.productCategory.slug,
+      description: product.productCategory.description || '',
+      image: product.productCategory.image_url || '',
+      productCount: 0,
+    };
+  }
+
+  // Fall back to category_id lookup in cache
+  if (product.category_id) {
+    const cat = _categoriesCache.find((c: any) => c.id === product.category_id);
+    if (cat) return { id: cat.id, name: cat.name, slug: cat.slug, description: cat.description || '', image: cat.image_url || '', productCount: 0 };
+  }
+
+  // Fall back to category name string match
+  if (product.category) {
+    const cat = _categoriesCache.find((c: any) =>
+      c.name?.toLowerCase() === product.category?.toLowerCase() ||
+      c.slug?.toLowerCase() === product.category?.toLowerCase()
+    );
+    if (cat) return { id: cat.id, name: cat.name, slug: cat.slug, description: cat.description || '', image: cat.image_url || '', productCount: 0 };
+  }
+
+  return {
+    id: '',
+    name: product.category || 'Uncategorized',
+    slug: (product.category || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
+    description: '',
+    image: '',
+    productCount: 0,
+  };
+}
+
+function findSubcategoryFromCache(product: any) {
+  if (product.productSubcategory) {
+    return {
+      id: product.productSubcategory.id,
+      name: product.productSubcategory.name,
+      slug: product.productSubcategory.slug,
+      description: product.productSubcategory.description,
+    };
+  }
+  if (product.subcategory_id && _categoriesCache.length) {
+    for (const cat of _categoriesCache) {
+      const sub = cat.subcategories?.find((s: any) => s.id === product.subcategory_id);
+      if (sub) return { id: sub.id, name: sub.name, slug: sub.slug, description: sub.description };
+    }
+  }
+  return undefined;
+}
+
+export function transformProduct(p: any): Product {
+  // rate     = MRP / original price (shown as strikethrough)
+  // sales_rate = selling / discounted price (shown as main price)
+  // If no sales_rate, rate is the selling price
+  const sellingPrice = p.sales_rate && p.sales_rate < p.rate ? p.sales_rate : p.rate || 0;
+  const originalPrice = p.sales_rate && p.sales_rate < p.rate ? p.rate : undefined;
+
   return {
     id: p.item_id || p.id,
     name: p.name,
     slug: p.item_id || p.id,
     description: p.enhanced_description || p.description || '',
     shortDescription: p.description || '',
-    price: (p.rate || 0) * 100,
-    compareAtPrice: p.sales_rate && p.sales_rate !== p.rate ? p.sales_rate * 100 : undefined,
+    // Store raw ₹ values — no *100 multiplication
+    price: sellingPrice,
+    compareAtPrice: originalPrice,
     currency: 'INR',
     images: p.image_url
       ? [{ id: '1', url: p.image_url, alt: p.name, position: 0 }]
-      : [],
-    category: {
-      id: p.productCategory?.id || '',
-      name: p.productCategory?.name || p.category || 'Uncategorized',
-      slug: p.productCategory?.slug || (p.category || 'uncategorized').toLowerCase().replace(/\s+/g, '-'),
-      description: p.productCategory?.description || '',
-      image: p.productCategory?.image_url || '',
-      productCount: 0,
-    },
-    subcategory: p.productSubcategory
-      ? {
-          id: p.productSubcategory.id,
-          name: p.productSubcategory.name,
-          slug: p.productSubcategory.slug,
-          description: p.productSubcategory.description,
-        }
-      : undefined,
-    categoryId: p.productCategory?.id || '',
+      : (p.images || []),
+    category: findCategoryFromCache(p),
+    subcategory: findSubcategoryFromCache(p),
+    categoryId: p.productCategory?.id || p.category_id || '',
     variants: p.variants || [],
-    tags: [],
+    tags: p.tags || [],
     specifications: p.specifications
       ? Object.entries(p.specifications).map(([name, value]) => ({ name, value: String(value) }))
       : [],
     inStock: (p.stock_on_hand || p.available_stock || 0) > 0,
     stockQuantity: p.stock_on_hand || p.available_stock || 0,
-    rating: 5,
-    reviewCount: 0,
-    featured: false,
+    rating: p.rating || 0,
+    reviewCount: p.reviewCount || 0,
+    featured: p.featured || false,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
     sku: p.sku,
-    rate: p.rate,
+    rate: sellingPrice,
     item_id: p.item_id,
     image_url: p.image_url,
   };
@@ -88,7 +147,9 @@ export class ProductApiService {
       const data = await res.json();
       const products = data.data || data.products || [];
 
-      if (data.categories) {
+      // Cache categories from response for category lookup
+      if (data.categories?.length) {
+        _categoriesCache = data.categories;
         localStorage.setItem('ekart24_categories', JSON.stringify(data.categories));
       }
 
@@ -103,7 +164,8 @@ export class ProductApiService {
     try {
       const res = await fetch(`${BACKEND_URL}/api/products/${id}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const p = await res.json();
+      const data = await res.json();
+      const p = data.data || data;
       return transformProduct(p);
     } catch (err) {
       console.error('Failed to fetch product:', err);
@@ -126,5 +188,4 @@ export class ProductApiService {
   }
 }
 
-// Keep backward-compat alias so existing imports don't break immediately
 export { ProductApiService as ShopifyApiService };
