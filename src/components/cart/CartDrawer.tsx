@@ -27,7 +27,6 @@ export function CartDrawer() {
       maximumFractionDigits: 0,
     }).format(price);
   };
-  };
 
   return (
     <AnimatePresence>
