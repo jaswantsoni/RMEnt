@@ -21,12 +21,12 @@ const contactInfo = [
   {
     icon: Phone,
     title: 'Phone',
-    details: ['+1607-661-1111'],
+    details: ['+91 78387 89898'],
   },
   {
     icon: Mail,
     title: 'Email',
-    details: ['hello@azzarohome.com', 'niti@azzarohome.com'],
+    details: ['rmp@ekart24.com'],
   },
   {
     icon: MapPin,

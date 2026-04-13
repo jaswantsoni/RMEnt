@@ -370,7 +370,7 @@ const ShippingReturns = () => {
               Contact Support
             </a>
             <a 
-              href="mailto:hello@azzarohome.com" 
+              href="mailto:rmp@ekart24.com" 
               className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-border rounded-lg hover:bg-card transition-colors font-medium"
             >
               <Phone className="h-4 w-4" />

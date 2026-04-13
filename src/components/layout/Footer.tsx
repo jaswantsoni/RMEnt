@@ -114,11 +114,11 @@ export function Footer() {
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-primary" />
-                <span>hello@ekart24.com</span>
+                <span>rmp@ekart24.com</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+91 00000 00000</span>
+                <span>+91 78387 89898</span>
               </div>
             </div>
           </div>

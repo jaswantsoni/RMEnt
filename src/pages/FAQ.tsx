@@ -109,7 +109,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "Do you ship internationally?",
-        answer: "Currently, we ship within the United States only. For international inquiries, please contact our customer service team at hello@azzarohome.com to discuss options."
+        answer: "Currently, we ship within the United States only. For international inquiries, please contact our customer service team at rmp@ekart24.com to discuss options."
       }
     ]
   },
@@ -124,7 +124,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "How do I initiate a return?",
-        answer: "Contact our customer service team at hello@azzarohome.com or call +1607-661-1111 to request a Return Authorization number. Include your order number and reason for return. Once approved, you'll receive return shipping instructions. Unauthorized returns will not be accepted."
+        answer: "Contact our customer service team at rmp@ekart24.com or call +91 78387 89898 to request a Return Authorization number. Include your order number and reason for return. Once approved, you'll receive return shipping instructions. Unauthorized returns will not be accepted."
       },
       {
         question: "Who pays for return shipping?",
@@ -229,7 +229,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "How can I contact customer service?",
-        answer: "We're here to help! Email us at hello@azzarohome.com, call +1607-661-1111, or use the contact form on our website. Our team typically responds within 24 hours during business days."
+        answer: "We're here to help! Email us at rmp@ekart24.com, call +91 78387 89898, or use the contact form on our website. Our team typically responds within 24 hours during business days."
       },
       {
         question: "Do you have a showroom I can visit?",
@@ -383,7 +383,7 @@ const FAQ = () => {
               Contact Support
             </a>
             <a 
-              href="mailto:hello@azzarohome.com" 
+              href="mailto:rmp@ekart24.com" 
               className="inline-flex items-center justify-center px-6 py-3 border border-border rounded-lg hover:bg-card transition-colors font-medium"
             >
               Email Us
