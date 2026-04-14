@@ -126,7 +126,7 @@ export default function Collections() {
       
       // Load categories from localStorage if available, or fetch from API
       if (categories.length === 0) {
-        const storedCategories = localStorage.getItem('azzaro_categories');
+        const storedCategories = localStorage.getItem('ekart24_categories');
         if (storedCategories) {
           try {
             const parsedCategories = JSON.parse(storedCategories);
@@ -151,7 +151,7 @@ export default function Collections() {
               }))
             }));
             setCategories(transformedCategories);
-            localStorage.setItem('azzaro_categories', JSON.stringify(transformedCategories));
+            localStorage.setItem('ekart24_categories', JSON.stringify(transformedCategories));
           } catch (error) {
             console.error('Failed to load categories:', error);
           }

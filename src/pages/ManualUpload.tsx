@@ -97,7 +97,7 @@ export default function ManualUpload() {
       imageUrl: p.imageUrl,
     }));
 
-    localStorage.setItem('azzaro_products_data', JSON.stringify(jsonData));
+    localStorage.setItem('rmp_products_data', JSON.stringify(jsonData));
     
     const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);

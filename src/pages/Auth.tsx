@@ -99,9 +99,9 @@ export default function Auth() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-5xl font-display font-bold mb-4">
-              <span className="text-gradient-gold">AZZARO</span>
-              <span className="text-foreground/80 text-3xl ml-2">HOME</span>
+            <h1 className="text-4xl font-display font-bold mb-4">
+              <span className="text-gradient-gold">RMP</span>
+              <span className="text-foreground/80 text-2xl ml-2">Jewels & Women Clothing</span>
             </h1>
             <p className="text-foreground/60 text-lg max-w-md">
               Experience luxury living with our premium collection of home décor and lighting solutions.

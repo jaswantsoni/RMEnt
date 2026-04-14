@@ -30,8 +30,8 @@ const faqCategories: FAQCategory[] = [
     color: "text-blue-600 dark:text-blue-400",
     faqs: [
       {
-        question: "What types of products does Azzaro Home offer?",
-        answer: "Azzaro Home specializes in premium lighting fixtures (chandeliers, pendants, wall sconces, table lamps), luxury ceiling fans, high-end bath fittings, and curated home decor accessories. All our products are carefully selected to bring elegance and sophistication to your living spaces."
+        question: "What types of products does RMP Jewels & Women Clothing offer?",
+        answer: "RMP Jewels & Women Clothing specializes in premium jewellery (necklaces, earrings, rings, bangles, bridal sets) and curated women's clothing (sarees, lehengas, kurtas, dresses, and accessories). All our products are carefully selected for quality, craftsmanship, and style."
       },
       {
         question: "Do I need to create an account to place an order?",

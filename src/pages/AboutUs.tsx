@@ -1,15 +1,15 @@
 import { motion } from 'framer-motion';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Gem, Shirt, Heart } from 'lucide-react';
 
 export default function AboutUs() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="pt-24">
-        {/* Hero Section */}
+        {/* Hero */}
         <section className="py-16 bg-card/30 border-b border-border">
           <div className="container mx-auto px-4 lg:px-8">
             <motion.div
@@ -18,119 +18,78 @@ export default function AboutUs() {
               transition={{ duration: 0.6 }}
               className="text-center max-w-3xl mx-auto"
             >
-              <h1 className="text-4xl md:text-5xl font-display font-semibold mb-4">
-                About <span className="text-gradient-gold">Azzaro Home</span>
+              <p className="text-xs tracking-[0.3em] uppercase text-primary mb-4">Our Story</p>
+              <h1 className="text-4xl md:text-5xl font-display font-semibold mb-6">
+                About <span className="text-gradient-gold">RMP Jewels & Women Clothing</span>
               </h1>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Where timeless jewellery meets curated women's fashion — crafted for the woman who values elegance in every detail.
+              </p>
             </motion.div>
           </div>
         </section>
 
-        {/* Content Section */}
         <section className="py-16">
-          <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
-            
-            {/* About Azzaro Home */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="mb-12"
-            >
-              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">
-                About Azzaro Home
-              </h2>
+          <div className="container mx-auto px-4 lg:px-8 max-w-4xl space-y-14">
+
+            {/* Who We Are */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-5">Who We Are</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Azzaro Home is a family-owned business based in Woodland Hills, California, specializing in premium imported lighting and home décor. We focus on bringing high-quality, design-forward pieces to homeowners, designers, and builders who value craftsmanship and style.
+                RMP Jewels & Women Clothing is a premium fashion destination bringing together exquisite jewellery and carefully curated women's clothing under one roof. We believe that what you wear is an expression of who you are — and we're here to make that expression beautiful.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Our approach is simple: offer exceptional products at competitive prices, backed by reliable service and a local showroom experience. Whether you're completing a full home project or looking for a single statement piece, we're here to help you find lighting that elevates your space.
+                From handcrafted necklaces and bridal sets to elegant sarees, lehengas, and everyday kurtas, every piece in our collection is chosen with care, quality, and the modern Indian woman in mind.
               </p>
             </motion.div>
 
             {/* What We Offer */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="mb-12"
-            >
-              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">
-                What We Offer
-              </h2>
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                We specialize in high-end imported lighting and décor pieces designed to bring sophistication and balance into modern homes. Every product in our collection is carefully selected to meet our standards for quality, finish, and design presence.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                In addition to our curated collection, we also offer custom lighting solutions tailored to specific project requirements, helping clients bring their exact vision to life.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                While we focus on premium pieces, we also believe great design should feel accessible, which is why we regularly offer competitive pricing and exclusive promotions.
-              </p>
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">What We Offer</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {[
+                  { icon: Gem, title: 'Fine Jewellery', desc: 'Necklaces, earrings, rings, bangles, maang tikka, and complete bridal sets — crafted to be cherished.' },
+                  { icon: Shirt, title: "Women's Clothing", desc: 'Sarees, lehengas, kurtas, dresses, and more — from everyday elegance to occasion wear.' },
+                  { icon: Heart, title: 'Curated Accessories', desc: 'Handbags, scarves, watches, and hair accessories to complete every look.' },
+                ].map(item => (
+                  <div key={item.title} className="p-5 rounded-sm border border-border bg-card/50">
+                    <item.icon className="h-7 w-7 text-primary mb-3" />
+                    <h3 className="font-semibold mb-2">{item.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
             </motion.div>
 
-            {/* Who We Work With */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="mb-12"
-            >
-              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">
-                Who We Work With
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Azzaro Home proudly works with homeowners, interior designers, and builders who are looking for lighting that complements high-quality spaces. Whether it's a full home project or a single statement piece, we aim to make the selection process smooth and reliable.
-              </p>
+            {/* Our Promise */}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} viewport={{ once: true }}>
+              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">Our Promise</h2>
+              <ul className="space-y-4">
+                {[
+                  'Authentic, premium-quality products — no compromises',
+                  'Competitive pricing with regular exclusive offers',
+                  'Fast and reliable delivery across India',
+                  'Dedicated customer support — we\'re always here to help',
+                  'Easy returns and a hassle-free shopping experience',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.div>
 
-            {/* Why Choose Us */}
+            {/* Closing */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               viewport={{ once: true }}
-              className="mb-12"
-            >
-              <h2 className="text-2xl md:text-3xl font-display font-semibold mb-6">
-                Why Choose Us
-              </h2>
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Fast and dependable delivery</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Competitive pricing on premium products</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Regular promotional offers</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Dedicated in-house customer support</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">A local showroom experience in Woodland Hills</span>
-                </li>
-              </ul>
-            </motion.div>
-
-            {/* Closing Statement */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
               className="text-center py-8 border-t border-border"
             >
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                We're here to help you complete your space with lighting that feels intentional, elegant, and built to stand out.
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+                At RMP, we don't just sell clothing and jewellery — we help you tell your story. Shop at <span className="text-primary font-medium">ekart24.com</span> and discover a collection made for you.
               </p>
             </motion.div>
 

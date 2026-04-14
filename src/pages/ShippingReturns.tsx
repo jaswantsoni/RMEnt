@@ -23,7 +23,7 @@ const ShippingReturns = () => {
               Shipping & Returns
             </h1>
             <p className="text-lg text-muted-foreground">
-              At Azzaro Home, we are committed to delivering your lighting pieces safely and efficiently. 
+              At RMP Jewels & Women Clothing, we are committed to delivering your orders safely and efficiently. 
               Please review our shipping and return policies below.
             </p>
           </div>
@@ -121,7 +121,7 @@ const ShippingReturns = () => {
               <h3 className="text-xl font-semibold">Freight & Oversized Items</h3>
             </div>
             <p className="text-muted-foreground mb-4">
-              Large lighting fixtures and chandeliers are shipped via freight carriers.
+              Bulky or oversized items are shipped via courier partners.
             </p>
             <div className="space-y-3">
               <p className="text-muted-foreground"><strong className="text-foreground">Please note:</strong></p>

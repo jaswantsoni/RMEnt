@@ -200,7 +200,7 @@ export default function Contact() {
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  title="Azzaro Home Location"
+                  title="RMP Jewels & Women Clothing Location"
                 />
               </div>
             </motion.div>

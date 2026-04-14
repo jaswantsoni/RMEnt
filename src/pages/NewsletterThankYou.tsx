@@ -22,7 +22,7 @@ export default function NewsletterThankYou() {
 
           {/* Main Heading */}
           <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
-            Welcome to the <span className="text-gradient-gold">Azzaro</span> Family!
+            Welcome to the <span className="text-gradient-gold">RMP</span> Family!
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8">
@@ -83,7 +83,7 @@ export default function NewsletterThankYou() {
           {/* Social Proof */}
           <div className="mt-12 pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground mb-4">
-              Join thousands of design enthusiasts who trust Azzaro Home
+              Join thousands of design enthusiasts who trust RMP Jewels & Women Clothing
             </p>
             <div className="flex justify-center gap-8 text-center">
               <div>
