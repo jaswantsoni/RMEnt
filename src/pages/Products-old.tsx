@@ -40,7 +40,7 @@ export default function Products() {
             description: p.description || p['Description'] || p['DESCRIPTION'] || '',
             shortDescription: (p.description || p['Description'] || '').substring(0, 100) + '...',
             price: (p.price || p['Price'] || p['PRICE'] || p['MRP'] || 0) * 100,
-            currency: 'USD',
+            currency: 'INR',
             images: [{ id: '1', url: convertDriveImageUrl(p.imageUrl || p['Image URL'] || p['IMAGE URL'] || ''), alt: p.name || 'Product', position: 0 }],
             category: { 
               id: categoryInfo.id, 

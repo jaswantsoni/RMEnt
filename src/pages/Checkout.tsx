@@ -11,7 +11,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
-import { formatUSD, calculateCartTotals, getTaxRate } from '@/lib/usUtils';
+import { formatINR, calculateCartTotals, getTaxRate } from '@/lib/usUtils';
 import { apiClient } from '@/lib/apiClient';
 import { customerApi } from '@/services/customerApi';
 
@@ -449,20 +449,20 @@ export default function Checkout() {
                 <div className="space-y-3 pb-4 border-b border-border/50">
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Subtotal ({cart.items.length} items)</span>
-                    <span>{formatUSD(subtotal)}</span>
+                    <span>{formatINR(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : formatUSD(shipping)}</span>
+                    <span>{shipping === 0 ? 'Free' : formatINR(shipping)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground/60">Tax ({(taxRate * 100).toFixed(2)}%)</span>
-                    <span>{formatUSD(tax)}</span>
+                    <span>{formatINR(tax)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between pt-4 text-lg font-semibold">
                   <span>Total</span>
-                  <span className="text-primary">{formatUSD(total)}</span>
+                  <span className="text-primary">{formatINR(total)}</span>
                 </div>
                 <div className="mt-6 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-foreground/60">

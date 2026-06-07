@@ -85,12 +85,12 @@ export function calculateShipping(subtotal: number): number {
 }
 
 /**
- * Format price in USD
+ * Format price in INR
  */
-export function formatUSD(amount: number): string {
+export function formatINR(amount: number): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
@@ -109,6 +109,6 @@ export function calculateCartTotals(subtotal: number, state?: string) {
     tax,
     shipping,
     total,
-    currency: 'USD' as const,
+    currency: 'INR' as const,
   };
 }

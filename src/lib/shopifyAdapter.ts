@@ -118,8 +118,8 @@ export class ShopifyProductAdapter {
       slug: shopifyProduct.handle,
       description: shopifyProduct.body_html.replace(/<[^>]*>/g, ''), // Strip HTML
       shortDescription: shopifyProduct.body_html.replace(/<[^>]*>/g, '').substring(0, 100) + '...',
-      price: parseFloat(mainVariant.price) * 100, // Convert USD to cents
-      currency: 'USD',
+      price: parseFloat(mainVariant.price) * 100, // Convert INR to cents
+      currency: 'INR',
       images: shopifyProduct.images.map(img => ({
         id: img.id.toString(),
         url: img.src,

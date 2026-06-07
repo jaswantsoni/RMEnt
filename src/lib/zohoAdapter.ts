@@ -67,7 +67,7 @@ export class ZohoProductAdapter {
       description: zohoItem.description || '',
       shortDescription: (zohoItem.description || '').substring(0, 100) + '...',
       price: parseFloat(zohoItem.rate || '0') * 100, // Convert to cents
-      currency: 'USD',
+      currency: 'INR',
       images: zohoItem.image_url ? [{
         id: '1',
         url: zohoItem.image_url,

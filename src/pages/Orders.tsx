@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { apiClient } from '@/lib/apiClient';
-import { formatUSD } from '@/lib/usUtils';
+import { formatINR } from '@/lib/usUtils';
 import {
   Table,
   TableBody,
@@ -130,7 +130,7 @@ export default function Orders() {
                             </div>
                           </TableCell>
                           <TableCell>{formatDate(order.invoice_date) || 'N/A'}</TableCell>
-                          <TableCell className="text-right font-semibold">{formatUSD(order.total)}</TableCell>
+                          <TableCell className="text-right font-semibold">{formatINR(order.total)}</TableCell>
                           <TableCell>
                             {expandedRow === idx ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </TableCell>
@@ -150,7 +150,7 @@ export default function Orders() {
                                           <p className="font-medium">{item.product_name}</p>
                                           <p className="text-muted-foreground">Qty: {item.quantity} {item.unit}</p>
                                         </div>
-                                        <p className="font-medium">{formatUSD(item.total)}</p>
+                                        <p className="font-medium">{formatINR(item.total)}</p>
                                       </div>
                                     ))}
                                   </div>
@@ -186,15 +186,15 @@ export default function Orders() {
                                 <div className="border-t pt-3 space-y-1">
                                   <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Subtotal</span>
-                                    <span>{formatUSD(order.sub_total)}</span>
+                                    <span>{formatINR(order.sub_total)}</span>
                                   </div>
                                   <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Tax</span>
-                                    <span>{formatUSD(order.tax_total)}</span>
+                                    <span>{formatINR(order.tax_total)}</span>
                                   </div>
                                   <div className="flex justify-between font-semibold pt-2 border-t">
                                     <span>Total</span>
-                                    <span className="text-primary">{formatUSD(order.total)}</span>
+                                    <span className="text-primary">{formatINR(order.total)}</span>
                                   </div>
                                 </div>
                               </div>

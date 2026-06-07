@@ -7,17 +7,17 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { Button } from '@/components/ui/button';
 
 const stats = [
-  { value: '10+', label: 'Years of Excellence' },
-  { value: '50K+', label: 'Happy Customers' },
+  { value: '5K+', label: 'Happy Customers' },
   { value: '500+', label: 'Premium Products' },
-  { value: '100+', label: 'Design Awards' },
+  { value: '100+', label: 'Jewellery Designs' },
+  { value: '50+', label: 'Clothing Styles' },
 ];
 
 const values = [
   {
     icon: Award,
     title: 'Quality Craftsmanship',
-    description: 'Every product is meticulously crafted using premium materials and traditional techniques.',
+    description: 'Every piece is meticulously crafted using premium materials and traditional techniques.',
   },
   {
     icon: Users,
@@ -26,30 +26,30 @@ const values = [
   },
   {
     icon: Leaf,
-    title: 'Sustainability',
-    description: 'Committed to eco-friendly practices and sustainable sourcing across our supply chain.',
+    title: 'Authentic Products',
+    description: 'We source only genuine, high-quality jewellery and clothing — no compromises.',
   },
   {
     icon: Heart,
-    title: 'Passion for Design',
-    description: 'Our team of designers blend artistry with functionality to create timeless pieces.',
+    title: 'Passion for Fashion',
+    description: 'Our curators blend artistry with wearability to bring you timeless, elegant pieces.',
   },
 ];
 
 const team = [
   {
-    name: 'Rajesh Sharma',
-    role: 'Founder & CEO',
+    name: 'Founder',
+    role: 'Vision & Strategy',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
   },
   {
-    name: 'Priya Patel',
-    role: 'Creative Director',
+    name: 'Creative Lead',
+    role: 'Curation & Design',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
   },
   {
-    name: 'Amit Kumar',
-    role: 'Head of Operations',
+    name: 'Operations Head',
+    role: 'Logistics & Support',
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
   },
 ];
@@ -64,8 +64,8 @@ export default function About() {
       <section className="relative pt-32 pb-24 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920"
-            alt="Luxury Interior"
+            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920"
+            alt="RMP Fashion"
             className="w-full h-full object-cover opacity-30"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
@@ -81,11 +81,11 @@ export default function About() {
               Our Story
             </span>
             <h1 className="text-4xl md:text-6xl font-display font-semibold mb-6">
-              Crafting <span className="text-gradient-gold">Luxury</span> for Your Home
+              Crafting <span className="text-gradient-gold">Elegance</span> for Every Woman
             </h1>
             <p className="text-xl text-muted-foreground">
-              Since 2010, Azzaro Home has been at the forefront of luxury home decor, 
-              bringing together exceptional craftsmanship and contemporary design.
+              RMP Jewels & Women Clothing — where fine jewellery meets curated fashion,
+              crafted for the woman who values elegance in every detail.
             </p>
           </motion.div>
         </div>
@@ -125,23 +125,22 @@ export default function About() {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl font-display font-semibold mb-6">
-                A Legacy of <span className="text-gradient-gold">Excellence</span>
+                A Story of <span className="text-gradient-gold">Passion & Style</span>
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  What began as a small lighting showroom in Mumbai has grown into one of 
-                  India's most prestigious home decor destinations. Our journey started with 
-                  a simple belief: every home deserves to be extraordinary.
+                  RMP Jewels & Women Clothing was born from a love of beautiful things — 
+                  the glint of a well-crafted necklace, the drape of a silk saree, the 
+                  confidence that comes from wearing something truly special.
                 </p>
                 <p>
-                  Over the years, we've curated collections from the world's finest artisans 
-                  and manufacturers, bringing together traditional craftsmanship and modern 
-                  design sensibilities.
+                  We've curated collections from skilled artisans and trusted manufacturers, 
+                  bringing together traditional craftsmanship and contemporary design sensibilities 
+                  for the modern Indian woman.
                 </p>
                 <p>
-                  Today, Azzaro Home stands as a testament to our unwavering commitment to 
-                  quality, design, and customer satisfaction. We continue to push boundaries, 
-                  introducing innovative products that transform spaces into works of art.
+                  Today, RMP stands as a destination for women who want premium jewellery and 
+                  clothing without compromise — available at <strong>ekart24.com</strong>.
                 </p>
               </div>
               <Button
@@ -160,8 +159,8 @@ export default function About() {
               className="relative"
             >
               <img
-                src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800"
-                alt="Azzaro Showroom"
+                src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800"
+                alt="RMP Jewellery Collection"
                 className="rounded-sm"
               />
               <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-primary/20 rounded-sm -z-10" />
@@ -222,7 +221,7 @@ export default function About() {
               Meet Our <span className="text-gradient-gold">Team</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              The passionate individuals behind Azzaro Home
+              The passionate individuals behind RMP Jewels & Women Clothing
             </p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">

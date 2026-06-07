@@ -45,78 +45,36 @@ export default function AuthCallback() {
       if (token) {
         try {
           console.log('Token received:', token);
-          if (window.opener) {
-            if (token) {
-              // Send token to main window
-              window.opener.postMessage({ token }, window.location.origin);
-            }
-            if (error) {
-              window.opener.postMessage({ error }, window.location.origin);
-            }
 
-            // Close the popup after a short delay to ensure message is sent
-            setTimeout(() => {
-              window.close();
-            }, 100);
+          // Decode JWT payload directly — no need for extra /api/auth/me call
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const user = {
+            id: payload.sub,
+            email: payload.email,
+            firstName: payload.first_name || payload.given_name || '',
+            lastName: payload.last_name || payload.family_name || '',
+            first_name: payload.first_name || payload.given_name || '',
+            last_name: payload.last_name || payload.family_name || '',
+            avatar_url: payload.avatar_url || payload.picture || null,
+            avatar: payload.avatar_url || payload.picture || null,
+          };
+
+          if (user.id || user.email) {
+            login(user, token);
+
+            await syncGuestCart();
+            await syncGuestWishlist();
+
+            toast({ title: 'Welcome!', description: 'Successfully signed in with Google' });
+            window.location.href = redirect;
           } else {
-            console.warn("No window.opener found. This page should be opened as a popup.");
-          }
-          
-          // Fetch user data with token
-          const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          console.log('Response status:', response.status);
-          
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('User data received:', userData);
-            
-            // Handle different response formats
-            const rawUser = userData.data?.user || userData.user || userData.data || userData;
-            
-            // Normalize user data
-            const user = {
-              ...rawUser,
-              firstName: rawUser.firstName || rawUser.first_name || rawUser.given_name || '',
-              lastName: rawUser.lastName || rawUser.last_name || rawUser.family_name || '',
-              first_name: rawUser.first_name || rawUser.firstName || rawUser.given_name || '',
-              last_name: rawUser.last_name || rawUser.lastName || rawUser.family_name || '',
-              avatar_url: rawUser.avatar_url || rawUser.avatar || rawUser.picture,
-              avatar: rawUser.avatar || rawUser.avatar_url || rawUser.picture,
-            };
-            
-            console.log('Normalized user data:', user);
-            
-            if (user.id || user.email) {
-              login(user, token);
-              
-              // Sync guest cart and wishlist to backend
-              await syncGuestCart();
-              await syncGuestWishlist();
-              
-              toast({
-                title: 'Welcome!',
-                description: 'Successfully signed in with Google',
-              });
-              // navigate(redirect);
-              window.location.href = redirect;
-              
-            } else {
-              throw new Error('No user data in response');
-            }
-          } else {
-            const errorData = await response.text();
-            console.error('Auth response error:', errorData);
-            throw new Error('Failed to fetch user data');
+            throw new Error('Invalid token payload');
           }
         } catch (error) {
           console.error('Auth callback error:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Failed to complete authentication';
           toast({
             title: 'Authentication Error',
-            description: errorMessage,
+            description: error instanceof Error ? error.message : 'Failed to complete authentication',
             variant: 'destructive',
           });
           navigate('/auth');

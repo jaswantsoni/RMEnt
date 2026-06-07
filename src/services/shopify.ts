@@ -103,7 +103,7 @@ class ShopifyService {
       compareAtPrice: shopifyProduct.variants[0]?.compare_at_price 
         ? parseFloat(shopifyProduct.variants[0].compare_at_price) 
         : undefined,
-      currency: 'USD',
+      currency: 'INR',
       images: shopifyProduct.images.map(img => ({
         id: img.id.toString(),
         url: img.src,

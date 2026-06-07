@@ -61,7 +61,7 @@ const createEmptyCart = (): Cart => ({
   tax: 0,
   shipping: 0,
   total: 0,
-  currency: 'USD',
+  currency: 'INR',
   itemCount: 0,
 });
 
@@ -78,7 +78,7 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
       shortDescription: item.product.description || '',
       price: item.product.rate,
       compareAtPrice: undefined,
-      currency: 'USD',
+      currency: 'INR',
       images: item.product.image_url ? [{ id: '1', url: item.product.image_url, alt: item.product.name, position: 0 }] : [],
       image_url: item.product.image_url,
       category: { id: '1', name: item.product.category || 'Uncategorized', slug: 'uncategorized', description: '', image: '', productCount: 0 },
@@ -111,7 +111,7 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
     tax,
     shipping,
     total,
-    currency: 'USD',
+    currency: 'INR',
     itemCount: backendCart.count,
   };
 };
