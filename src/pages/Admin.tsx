@@ -403,9 +403,9 @@ export default function Admin() {
                       <TableCell className="text-sm">{p.productCategory?.name || p.category || '—'}</TableCell>
                       <TableCell className="text-sm">
                         <div>
-                          <span>₹{(p.rate || 0).toLocaleString()}</span>
-                          {p.sales_rate && p.sales_rate !== p.rate && (
-                            <span className="text-xs text-muted-foreground line-through ml-1">₹{p.sales_rate.toLocaleString()}</span>
+                          <span>₹{(p.sales_rate && p.sales_rate < p.rate ? p.sales_rate : p.rate || 0).toLocaleString()}</span>
+                          {p.sales_rate && p.sales_rate < p.rate && (
+                            <span className="text-xs text-muted-foreground line-through ml-1">₹{p.rate.toLocaleString()}</span>
                           )}
                         </div>
                       </TableCell>

@@ -131,11 +131,11 @@ export default function Wishlist() {
                       <p className="text-sm text-foreground/60 mt-1">{product.category?.name}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-lg font-semibold text-primary">
-                          ${product.price.toLocaleString()}
+                          ₹{product.price.toLocaleString('en-IN')}
                         </span>
                         {product.compareAtPrice && (
                           <span className="text-sm text-foreground/40 line-through">
-                            ${product.compareAtPrice.toLocaleString()}
+                            ₹{product.compareAtPrice.toLocaleString('en-IN')}
                           </span>
                         )}
                       </div>
