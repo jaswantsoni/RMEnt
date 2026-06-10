@@ -11,7 +11,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
 import { useAddressStore } from '@/store/addressStore';
 import { useToast } from '@/hooks/use-toast';
-import { formatINR, calculateCartTotals, getTaxRate } from '@/lib/usUtils';
+import { formatINR } from '@/lib/usUtils';
 import { apiClient } from '@/lib/apiClient';
 import { customerApi } from '@/services/customerApi';
 
@@ -153,8 +153,8 @@ export default function Checkout() {
   }, [addresses, selectedShippingId, user]);
 
   const subtotal = cart?.subtotal || 0;
-  const { tax, shipping, total } = calculateCartTotals(subtotal, shippingData.state);
-  const taxRate = getTaxRate(shippingData.state);
+  const shipping = subtotal >= 1000 ? 0 : 30;
+  const total = subtotal + shipping;
 
   // Don't render checkout if not authenticated
   if (!isAuthenticated) {
@@ -448,16 +448,12 @@ export default function Checkout() {
                 <h3 className="text-lg font-display font-semibold mb-4">Order Summary</h3>
                 <div className="space-y-3 pb-4 border-b border-border/50">
                   <div className="flex justify-between text-sm">
-                    <span className="text-foreground/60">Subtotal ({cart.items.length} items)</span>
+                    <span className="text-foreground/60">Price ({cart.items.length} items)</span>
                     <span>{formatINR(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-foreground/60">Shipping</span>
+                    <span className="text-foreground/60">Delivery Charge</span>
                     <span>{shipping === 0 ? 'Free' : formatINR(shipping)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-foreground/60">Tax ({(taxRate * 100).toFixed(2)}%)</span>
-                    <span>{formatINR(tax)}</span>
                   </div>
                 </div>
                 <div className="flex justify-between pt-4 text-lg font-semibold">

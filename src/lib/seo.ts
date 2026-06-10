@@ -93,10 +93,12 @@ export const updatePageSEO = (config: SEOConfig) => {
 };
 
 // ── JSON-LD helpers ───────────────────────────────────────────────────────────
-const setJsonLd = (data: object) => {
-  document.querySelectorAll('script[type="application/ld+json"]').forEach(s => s.remove());
+const setJsonLd = (data: object, id = 'dynamic') => {
+  const existing = document.querySelector(`script[type="application/ld+json"][data-id="${id}"]`);
+  if (existing) existing.remove();
   const script = document.createElement('script');
   script.type = 'application/ld+json';
+  script.setAttribute('data-id', id);
   script.text = JSON.stringify(data);
   document.head.appendChild(script);
 };

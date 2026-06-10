@@ -167,18 +167,14 @@ export function CartDrawer() {
                 <div className="p-6 border-t border-border space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-muted-foreground">Price</span>
                       <span>{formatPrice(cart?.subtotal || 0)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-muted-foreground">Delivery Charge</span>
                       <span>
                         {cart?.shipping === 0 ? 'Free' : formatPrice(cart?.shipping || 30)}
                       </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">VAT Tax (9.75%)</span>
-                      <span>{formatPrice(cart?.tax || 0)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between font-semibold">

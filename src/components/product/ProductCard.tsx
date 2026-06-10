@@ -238,7 +238,7 @@ export const ProductCard = memo(function ProductCard({ product, index = 0 }: Pro
           
           
           {/* Rating */}
-          {product.rating && product.rating > 0 && (
+          {product.rating>0 && product.rating > 0 && (
             <div className="flex items-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star

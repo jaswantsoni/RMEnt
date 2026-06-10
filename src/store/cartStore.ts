@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { customerApi } from '@/services/customerApi';
-import { calculateCartTotals } from '@/lib/usUtils';
+import { calculateShipping } from '@/lib/usUtils';
 import type { Cart, CartItem, Product, ProductVariant } from '@/types/api';
 
 interface PendingCartItem {
@@ -102,13 +102,14 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
   }));
   
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-  const { tax, shipping, total } = calculateCartTotals(subtotal);
+  const shipping = calculateShipping(subtotal);
+  const total = subtotal + shipping;
   
   return {
     id: 'backend-cart',
     items,
     subtotal,
-    tax,
+    tax: 0,
     shipping,
     total,
     currency: 'INR',
@@ -225,14 +226,15 @@ export const useCartStore = create<CartStore>()(
           }
 
           const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-          const { tax, shipping, total } = calculateCartTotals(subtotal);
+          const shipping = calculateShipping(subtotal);
+          const total = subtotal + shipping;
 
           set({
             cart: {
               ...currentCart,
               items: updatedItems,
               subtotal,
-              tax,
+              tax: 0,
               shipping,
               total,
               itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -273,14 +275,15 @@ export const useCartStore = create<CartStore>()(
         }
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const { tax, shipping, total } = calculateCartTotals(subtotal);
+        const shipping = calculateShipping(subtotal);
+        const total = subtotal + shipping;
 
         set({
           cart: {
             ...currentCart,
             items: updatedItems,
             subtotal,
-            tax,
+            tax: 0,
             shipping,
             total,
             itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -315,24 +318,24 @@ export const useCartStore = create<CartStore>()(
         );
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const { tax, shipping, total } = calculateCartTotals(subtotal);
+        const shipping = calculateShipping(subtotal);
+        const total = subtotal + shipping;
 
         set({
           cart: {
             ...currentCart,
             items: updatedItems,
             subtotal,
-            tax,
+            tax: 0,
             shipping,
             total,
             itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
           },
         });
 
-        // Sync with backend
+        // Sync with backend silently
         try {
           await customerApi.updateCartItem(itemId, quantity);
-          await get().fetchCart();
         } catch (error) {
           console.error('Failed to update cart:', error);
           set({ cart: currentCart });
@@ -345,24 +348,24 @@ export const useCartStore = create<CartStore>()(
         const updatedItems = currentCart.items.filter(item => item.id !== itemId);
 
         const subtotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
-        const { tax, shipping, total } = calculateCartTotals(subtotal);
+        const shipping = calculateShipping(subtotal);
+        const total = subtotal + shipping;
 
         set({
           cart: {
             ...currentCart,
             items: updatedItems,
             subtotal,
-            tax,
+            tax: 0,
             shipping,
             total,
             itemCount: updatedItems.reduce((sum, item) => sum + item.quantity, 0),
           },
         });
 
-        // Sync with backend
+        // Sync with backend silently
         try {
           await customerApi.removeFromCart(itemId);
-          await get().fetchCart();
         } catch (error) {
           console.error('Failed to remove from cart:', error);
           set({ cart: currentCart });
