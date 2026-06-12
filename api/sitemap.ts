@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-const BACKEND_URL = process.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
-const SITE_URL = process.env.VITE_SITE_URL || 'https://ekart24.com';
+// VITE_ env vars are available in serverless functions when set in Vercel dashboard
+const BACKEND_URL = (process.env.VITE_BACKEND_URL || 'http://localhost:4000/api').replace(/\/$/, '');
+const SITE_URL = (process.env.VITE_SITE_URL || 'https://ekart24.com').replace(/\/$/, '');
 
 interface ProductImage {
   url: string;
@@ -39,35 +40,73 @@ async function fetchAllProducts(): Promise<Product[]> {
   const pageSize = 100;
 
   while (true) {
-    const res = await fetch(
-      `${BACKEND_URL}/products?page=${page}&pageSize=${pageSize}`,
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+    const url = `${BACKEND_URL}/products?page=${page}&pageSize=${pageSize}&limit=${pageSize}`;
+    console.log(`[sitemap] Fetching products: ${url}`);
 
-    if (!res.ok) break;
+    let res: Response;
+    try {
+      res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+    } catch (err) {
+      console.error(`[sitemap] Network error fetching products:`, err);
+      break;
+    }
 
-    const json: ApiResponse<PaginatedResponse<Product>> = await res.json();
-    if (!json.success || !json.data?.items?.length) break;
+    if (!res.ok) {
+      console.error(`[sitemap] Products fetch failed: ${res.status} ${res.statusText}`);
+      break;
+    }
 
-    products.push(...json.data.items);
+    const json = await res.json();
+    console.log(`[sitemap] Products response shape:`, JSON.stringify(Object.keys(json)));
 
-    if (page >= json.data.totalPages) break;
+    // Handle both { success, data: { items } } and { success, data: [] } shapes
+    const items: Product[] =
+      json?.data?.items ||   // paginated: { data: { items: [] } }
+      json?.data ||          // flat array: { data: [] }
+      json?.products ||      // { products: [] }
+      [];
+
+    if (!items.length) break;
+
+    products.push(...items);
+
+    const totalPages = json?.data?.totalPages ?? json?.totalPages ?? 1;
+    if (page >= totalPages) break;
     page++;
   }
 
+  console.log(`[sitemap] Total products fetched: ${products.length}`);
   return products;
 }
 
 // Fetch all categories
 async function fetchAllCategories(): Promise<Category[]> {
-  const res = await fetch(`${BACKEND_URL}/categories`, {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const url = `${BACKEND_URL}/categories`;
+  console.log(`[sitemap] Fetching categories: ${url}`);
 
-  if (!res.ok) return [];
+  let res: Response;
+  try {
+    res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+  } catch (err) {
+    console.error(`[sitemap] Network error fetching categories:`, err);
+    return [];
+  }
 
-  const json: ApiResponse<Category[]> = await res.json();
-  return json.success ? json.data : [];
+  if (!res.ok) {
+    console.error(`[sitemap] Categories fetch failed: ${res.status} ${res.statusText}`);
+    return [];
+  }
+
+  const json = await res.json();
+  console.log(`[sitemap] Categories response shape:`, JSON.stringify(Object.keys(json)));
+
+  const categories: Category[] =
+    json?.data ||
+    json?.categories ||
+    [];
+
+  console.log(`[sitemap] Total categories fetched: ${categories.length}`);
+  return categories;
 }
 
 function escapeXml(str: string): string {
@@ -159,6 +198,33 @@ ${productUrls}
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Debug endpoint: /sitemap.xml?debug=1 — shows backend connectivity info
+  if (req.query?.debug === '1') {
+    const info: Record<string, unknown> = {
+      BACKEND_URL,
+      SITE_URL,
+    };
+    try {
+      const testRes = await fetch(`${BACKEND_URL}/products?page=1&pageSize=1`);
+      info.products_status = testRes.status;
+      const testJson = await testRes.json();
+      info.products_response_keys = Object.keys(testJson);
+      info.products_sample = JSON.stringify(testJson).slice(0, 500);
+    } catch (err) {
+      info.products_error = String(err);
+    }
+    try {
+      const catRes = await fetch(`${BACKEND_URL}/categories`);
+      info.categories_status = catRes.status;
+      const catJson = await catRes.json();
+      info.categories_response_keys = Object.keys(catJson);
+    } catch (err) {
+      info.categories_error = String(err);
+    }
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json(info);
+  }
+
   try {
     const [products, categories] = await Promise.all([
       fetchAllProducts(),
