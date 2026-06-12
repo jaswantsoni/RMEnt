@@ -76,8 +76,12 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
       slug: item.product.item_id || item.product.id,
       description: item.product.description || '',
       shortDescription: item.product.description || '',
-      price: item.product.rate,
-      compareAtPrice: undefined,
+      price: item.product.sales_rate && item.product.sales_rate < item.product.rate
+        ? item.product.sales_rate
+        : item.product.rate,
+      compareAtPrice: item.product.sales_rate && item.product.sales_rate < item.product.rate
+        ? item.product.rate
+        : undefined,
       currency: 'INR',
       images: item.product.image_url ? [{ id: '1', url: item.product.image_url, alt: item.product.name, position: 0 }] : [],
       image_url: item.product.image_url,
@@ -97,8 +101,12 @@ const transformBackendCart = (backendCart: BackendCart): Cart => {
     variantId: item.variant_id,
     variant: item.variant,
     quantity: item.quantity,
-    price: item.product.rate,
-    total: item.product.rate * item.quantity,
+    price: item.product.sales_rate && item.product.sales_rate < item.product.rate
+      ? item.product.sales_rate
+      : item.product.rate,
+    total: (item.product.sales_rate && item.product.sales_rate < item.product.rate
+      ? item.product.sales_rate
+      : item.product.rate) * item.quantity,
   }));
   
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
