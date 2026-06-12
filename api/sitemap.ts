@@ -1,21 +1,21 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// VITE_ env vars are available in serverless functions when set in Vercel dashboard
-const BACKEND_URL = (process.env.VITE_BACKEND_URL || 'http://localhost:4000/api').replace(/\/$/, '');
+// VITE_BACKEND_URL is the base URL (e.g. https://host.com) — /api is appended here
+const BACKEND_URL = (process.env.VITE_BACKEND_URL || 'http://localhost:4000').replace(/\/$/, '') + '/api';
 const SITE_URL = (process.env.VITE_SITE_URL || 'https://ekart24.com').replace(/\/$/, '');
 
 interface ProductImage {
   url: string;
-  alt: string;
+  alt?: string;       // not present in API, optional
+  sort_order?: number;
 }
 
 interface Product {
-  slug: string;
+  item_id: string;   // used as slug
   name: string;
-  updatedAt: string;
+  updated_at?: string;
   image_url?: string;
   images?: ProductImage[];
-  category?: { name: string };
 }
 
 interface Category {
@@ -37,11 +37,11 @@ interface PaginatedResponse<T> {
 async function fetchAllProducts(): Promise<Product[]> {
   const products: Product[] = [];
   let page = 1;
-  const pageSize = 100;
+  const limit = 100;
 
   while (true) {
-    const url = `${BACKEND_URL}/products?page=${page}&pageSize=${pageSize}&limit=${pageSize}`;
-    console.log(`[sitemap] Fetching products: ${url}`);
+    const url = `${BACKEND_URL}/products?page=${page}&limit=${limit}&sort_by=created_at&sort_order=desc`;
+    console.log(`[sitemap] Fetching products page ${page}: ${url}`);
 
     let res: Response;
     try {
@@ -57,21 +57,12 @@ async function fetchAllProducts(): Promise<Product[]> {
     }
 
     const json = await res.json();
-    console.log(`[sitemap] Products response shape:`, JSON.stringify(Object.keys(json)));
-
-    // Handle both { success, data: { items } } and { success, data: [] } shapes
-    const items: Product[] =
-      json?.data?.items ||   // paginated: { data: { items: [] } }
-      json?.data ||          // flat array: { data: [] }
-      json?.products ||      // { products: [] }
-      [];
+    const items: Product[] = json?.data || [];
 
     if (!items.length) break;
-
     products.push(...items);
 
-    const totalPages = json?.data?.totalPages ?? json?.totalPages ?? 1;
-    if (page >= totalPages) break;
+    if (!json?.pagination?.hasNext) break;
     page++;
   }
 
@@ -98,13 +89,7 @@ async function fetchAllCategories(): Promise<Category[]> {
   }
 
   const json = await res.json();
-  console.log(`[sitemap] Categories response shape:`, JSON.stringify(Object.keys(json)));
-
-  const categories: Category[] =
-    json?.data ||
-    json?.categories ||
-    [];
-
+  const categories: Category[] = json?.data || [];
   console.log(`[sitemap] Total categories fetched: ${categories.length}`);
   return categories;
 }
@@ -159,13 +144,12 @@ function buildSitemap(products: Product[], categories: Category[]): string {
 
   const productUrls = products
     .map((product) => {
-      // Collect all images for this product (deduplicated)
       const imageSet = new Set<string>();
       if (product.image_url) imageSet.add(product.image_url);
       product.images?.forEach((img) => img.url && imageSet.add(img.url));
 
       const imageNodes = Array.from(imageSet)
-        .slice(0, 10) // Google recommends max ~1000 images per page; 10 is plenty per product
+        .slice(0, 10)
         .map((imgUrl, i) => {
           const alt = product.images?.[i]?.alt || product.name;
           return `
@@ -179,8 +163,8 @@ function buildSitemap(products: Product[], categories: Category[]): string {
 
       return `
   <url>
-    <loc>${escapeXml(`${SITE_URL}/product/${product.slug}`)}</loc>
-    <lastmod>${product.updatedAt ? new Date(product.updatedAt).toISOString() : now}</lastmod>
+    <loc>${escapeXml(`${SITE_URL}/product/${product.item_id}`)}</loc>
+    <lastmod>${product.updated_at ? new Date(product.updated_at).toISOString() : now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>${imageNodes}
   </url>`;
